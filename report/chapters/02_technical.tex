@@ -1,56 +1,77 @@
 \part{KIẾN THỨC CỐT LÕI VÀ THỰC HÀNH}
 
-\chapter{Thiết lập môi trường và Cấu trúc dự án chuẩn}
+\chapter{Thiết lập môi trường và Cấu trúc dự án}
 
-\section{Công cụ cần thiết}
+\section{Công cụ phát triển cần thiết}
+Để xây dựng và triển khai dự án Trello Mini, nhóm đã sử dụng các công cụ phần mềm và môi trường hiện đại, tối ưu nhất hiện nay:
 \begin{itemize}
-    \item IDE: Visual Studio Code với các extension (ESLint, Prettier).
-    \item Package Manager: npm hoặc yarn.
-    \item Build tool: Vite hoặc Create React App.
+    \item \textbf{Môi trường chạy mã (Runtime Environment):} Node.js phiên bản LTS (Long Term Support). Node.js đi kèm với \texttt{npm} (Node Package Manager), giúp quản lý và cài đặt các thư viện phụ thuộc một cách dễ dàng.
+    \item \textbf{Trình soạn thảo mã nguồn (IDE):} Visual Studio Code. Đây là trình soạn thảo nhẹ, mạnh mẽ, được cài đặt kèm các tiện ích mở rộng (Extensions) như \textit{ESLint} (kiểm tra lỗi cú pháp), \textit{Prettier} (định dạng code tự động) và \textit{Tailwind CSS IntelliSense} (hỗ trợ gợi ý class CSS).
+    \item \textbf{Công cụ đóng gói (Build Tool):} \textbf{Vite}. Nhóm quyết định sử dụng Vite thay cho Create React App (CRA) truyền thống. Vite sử dụng esbuild (được viết bằng Go), giúp thời gian khởi động server phát triển (dev server) và thời gian phản hồi thay đổi (HMR - Hot Module Replacement) nhanh hơn CRA từ 10 đến 100 lần.
 \end{itemize}
 
-\section{Cài đặt \& Hello World}
-Quy trình khởi tạo project với Vite: 
+\section{Cài đặt và Khởi tạo dự án}
+Quy trình khởi tạo project với Vite được thực hiện qua dòng lệnh:
 \begin{verbatim}
-npm create vite@latest trello-mini --template react
+npm create vite@latest baby-trello -- --template react-ts
+cd baby-trello
+npm install
+npm run dev
 \end{verbatim}
+Dự án sử dụng \textbf{TypeScript} (\texttt{react-ts}) thay vì JavaScript thuần. TypeScript cung cấp hệ thống kiểm tra kiểu tĩnh (Static Typing), giúp định nghĩa rõ ràng cấu trúc dữ liệu của các \texttt{Board}, \texttt{List}, \texttt{Card}, qua đó hạn chế tối đa các lỗi "undefined" (lỗi truy cập thuộc tính không tồn tại) trong quá trình xử lý logic kéo thả.
 
-\section{Phân tích cấu trúc thư mục}
-Dự án được tổ chức theo kiến trúc chuẩn:
+\section{Kiến trúc thư mục (Folder Structure)}
+Một dự án tốt cần một cấu trúc thư mục rõ ràng để dễ dàng bảo trì và mở rộng. Thay vì nhóm các file theo loại (Types-based) như cách làm cũ, dự án áp dụng \textbf{Kiến trúc hướng Tính năng (Feature-based Architecture)}:
 \begin{itemize}
-    \item \texttt{src/components}: Chứa các thành phần giao diện dùng chung.
-    \item \texttt{src/context}: Quản lý Global State (Auth, Boards).
-    \item \texttt{src/hooks}: Chứa các custom hooks (\texttt{useAuth}, \texttt{useBoards}).
-    \item \texttt{src/pages}: Các trang chính (Login, Dashboard, Board).
+    \item \texttt{src/components}: Chứa các thành phần UI dùng chung, độc lập với ngữ cảnh nghiệp vụ (như Button, Header, Sidebar).
+    \item \texttt{src/features}: Là trái tim của ứng dụng. Chứa logic và giao diện cốt lõi được chia theo từng miền tính năng riêng biệt. Cụ thể gồm miền \texttt{auth} (đăng nhập) và \texttt{boards} (quản lý bảng, danh sách, thẻ, kéo thả). Mọi logic nội bộ của tính năng nào sẽ nằm gọn trong thư mục của tính năng đó.
+    \item \texttt{src/layouts}: Quản lý các bố cục chung của ứng dụng, ví dụ \texttt{MainLayout} quy định vị trí của Sidebar bên trái và nội dung động (Outlet) nằm bên phải.
+    \item \texttt{src/routes}: Chứa cấu hình React Router v6 (dạng Data Mode), phân luồng điều hướng và định nghĩa các hàm \texttt{Loader} lấy dữ liệu trước khi render trang.
+    \item \texttt{src/types}: Tập trung định nghĩa các TypeScript Interfaces (\texttt{IBoard}, \texttt{IList}, \texttt{ICard}) dùng chung cho toàn dự án.
+    \item \texttt{src/hooks}: Chứa các Custom Hooks toàn cục dùng để tương tác với Local Storage hoặc Global Context.
 \end{itemize}
 
 \chapter{Các khái niệm nền tảng (Fundamentals)}
 
 \section{Lý thuyết về React Hooks}
+React Hooks là tính năng cốt lõi được ra mắt từ phiên bản React 16.8, cho phép sử dụng State và các tính năng của React mà không cần phải viết Class. Dự án tận dụng triệt để các Hooks cơ bản:
 \begin{itemize}
-    \item \textbf{useState \& useReducer:} Quản lý trạng thái cục bộ và các logic phức tạp.
-    \item \textbf{useContext:} Giải quyết bài toán truyền dữ liệu qua nhiều cấp component (Prop Drilling).
+    \item \textbf{useState:} Quản lý trạng thái cục bộ của các Component đơn giản (ví dụ: trạng thái mở/đóng của Form nhập liệu, nội dung đang gõ trong ô Input).
+    \item \textbf{useEffect:} Quản lý các Side-effects (hiệu ứng phụ), chẳng hạn như việc đồng bộ hóa dữ liệu từ State xuống Local Storage mỗi khi State thay đổi, hoặc thao tác gán sự kiện bàn phím (nhấn Esc để đóng Modal).
+    \item \textbf{useContext:} Cung cấp phương thức để truyền dữ liệu (Data) từ Component cha xuống các Component con ở tầng rất sâu mà không cần phải truyền liên tiếp qua trung gian (tránh hiện tượng Prop Drilling).
+    \item \textbf{useReducer:} Phù hợp để quản lý các State phức tạp. Khi State là một mảng lồng mảng (Mảng Board chứa List, Mảng List chứa Card), việc dùng \texttt{useState} rất dễ gây nhầm lẫn. \texttt{useReducer} giải quyết bằng cách nhận vào một "hành động" (Action) và tự tính toán ra State mới.
 \end{itemize}
 
-\section{Custom Hooks (Bắt buộc)}
-Dự án sử dụng 3 custom hooks chính để tách biệt logic và giao diện:
+\section{Custom Hooks - Tách biệt Logic và Giao diện}
+Để mã nguồn giao diện (UI) trở nên trong sáng, nhóm đã áp dụng pattern thiết kế bằng cách xây dựng các \textbf{Custom Hooks}.
 \begin{itemize}
-    \item \texttt{useAuth}: Quản lý đăng nhập, đăng xuất và phân quyền.
-    \item \texttt{useBoards}: Xử lý các thao tác với Board (Tạo, xóa, lấy danh sách).
-    \item \texttt{useCards}: Quản lý Card trong Board (Thêm, xóa, di chuyển).
+    \item \texttt{useAuth()}: Cung cấp các hàm \texttt{login}, \texttt{logout} và trạng thái \texttt{isAuthenticated}.
+    \item \textbf{\texttt{useBoards()} và \texttt{useCards()}}: Cung cấp các hàm như \texttt{addCard(listId, title)}, \texttt{deleteList(id)}. Thay vì lập trình viên UI phải tự thao tác với mảng dữ liệu, họ chỉ việc gọi các hàm trừu tượng này. Điều này tuân thủ nguyên tắc \textit{Separation of Concerns} (Tách biệt mối quan tâm).
 \end{itemize}
 
-\section{Routing và Lazy Loading}
-Sử dụng \texttt{React Router} để quản lý đường dẫn. Các trang (\texttt{LoginPage}, \texttt{DashboardPage}, \texttt{BoardPage}) được tải chậm (\textbf{Lazy Loading}) bằng \texttt{React.lazy()} để tối ưu hóa thời gian tải ban đầu.
-
-\chapter{Quản lý trạng thái và Tối ưu hóa}
-
-\section{Global State Design}
-Sử dụng \textbf{Context API + useReducer} để quản lý trạng thái tập trung. Cấu trúc State bao gồm:
+\section{Routing nâng cao với React Router v6.4+}
+Dự án sử dụng cơ chế \textbf{Data Router} mới nhất của React Router.
 \begin{itemize}
-    \item \textbf{Auth State:} Thông tin người dùng và trạng thái đăng nhập.
-    \item \textbf{Board State:} Danh sách các board, list và card tương ứng.
+    \item Khác với phương pháp cũ (vào trang xong mới gọi \texttt{useEffect} để lấy dữ liệu, gây ra hiện tượng giật màn hình - waterfall), \textbf{Data Mode} sử dụng các hàm \texttt{loader}.
+    \item Khi người dùng truy cập route \texttt{/boards/:boardId}, hàm \texttt{loader} sẽ chạy trước, trích xuất ID, tìm kiếm dữ liệu trong Local Storage. Chỉ khi có dữ liệu, Component \texttt{BoardDetail} mới được render và nhận dữ liệu thẳng qua \texttt{useLoaderData()}, giúp trải nghiệm người dùng mượt mà ngay từ giây đầu tiên.
 \end{itemize}
 
-\section{Tối ưu hiệu năng}
-Sử dụng \texttt{React.memo} và \texttt{useCallback} để tránh re-render không cần thiết các card khi người dùng thực hiện thao tác kéo thả.
+\chapter{Quản lý Trạng thái và Tối ưu hóa}
+
+\section{Kiến trúc Global State Design}
+Sự kết hợp giữa \textbf{Context API} và \textbf{useReducer} tạo thành một hệ thống quản lý trạng thái tập trung mạnh mẽ (tương đương Redux nhưng nhẹ hơn). Cấu trúc State bao gồm hai vùng chính:
+\begin{itemize}
+    \item \textbf{Auth State:} Quản lý thông tin phiên làm việc, phân quyền người dùng và bảo vệ các trang yêu cầu đăng nhập (Protected Routes).
+    \item \textbf{Board State:} Lưu trữ cây dữ liệu Kanban. Mọi hành động thao tác (như sửa tên, xóa thẻ, kéo thẻ sang cột
+ khác) đều được gọi thông qua hàm \texttt{dispatch(action)}. Reducer sẽ tiếp nhận và trả về cây State mới, kích hoạt quá trình Virtual DOM tính toán và cập nhật giao diện tự động.
+\end{itemize}
+
+\section{Tương tác Local Storage (Persistence)}
+Do đặc thù không sử dụng Backend, việc đảm bảo dữ liệu không bị mất khi tải lại trang (F5) là bắt buộc. Nhóm sử dụng kỹ thuật \textit{State Persistence}:
+Bên trong Component cung cấp Context (\texttt{BoardProvider}), một \texttt{useEffect} được thiết lập để theo dõi sự thay đổi của State trung tâm. Bất cứ khi nào State thay đổi (dù là thêm một thẻ nhỏ hay xóa cả một bảng), hiệu ứng này sẽ chuyển đổi State thành chuỗi JSON và ghi đè vào Local Storage của trình duyệt một cách trong suốt (transparent) với người dùng.
+
+\section{Tối ưu hiệu năng (Performance Optimization) và Lazy Loading}
+\begin{itemize}
+    \item \textbf{Lazy Loading (Tải chậm):} Để giảm kích thước file bundle đầu tiên khi vào trang, các giao diện độc lập (\texttt{LoginPage}, \texttt{Dashboard}, \texttt{BoardDetail}) được phân tách bằng \texttt{React.lazy()} và bọc trong \texttt{<Suspense>}. Code giao diện nào chỉ tải về khi người dùng thực sự truy cập vào đường dẫn đó.
+    \item \textbf{Tối ưu Render kéo thả:} Trong quá trình kéo thả (Drag \& Drop), chuột di chuyển liên tục sẽ gây ra hàng loạt tín hiệu thay đổi trạng thái. Nhóm nghiên cứu áp dụng \texttt{React.memo} cho các Component như \texttt{TaskCard} và \texttt{useCallback} cho các hàm xử lý sự kiện để ngăn chặn việc React re-render toàn bộ các thẻ không liên quan, qua đó giữ FPS (số khung hình/giây) luôn ở mức ổn định.
+\end{itemize}

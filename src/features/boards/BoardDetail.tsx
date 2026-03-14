@@ -1,6 +1,7 @@
 import { useLoaderData } from "react-router-dom";
 import type { IBoard } from "../../types";
 import List from "./components/List";
+import AddListForm from "./components/AddListForm";
 
 const BoardDetail = () => {
   const board = useLoaderData() as IBoard | null;
@@ -36,10 +37,7 @@ const BoardDetail = () => {
             <List key={list.id} list={list} />
           ))}
 
-          <button className="kanban-column shrink-0 bg-white/20 dark:bg-slate-800/20 hover:bg-white/40 dark:hover:bg-slate-800/40 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 font-bold transition-all h-[56px] w-72">
-            <span className="material-symbols-outlined">add</span>
-            Thêm danh sách khác
-          </button>
+          <AddListForm boardId={board.id} />
         </div>
       </main>
     </div>

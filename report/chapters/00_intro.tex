@@ -2,47 +2,56 @@
 \addcontentsline{toc}{chapter}{LỜI MỞ ĐẦU}
 
 \section{Lý do chọn đề tài}
-Mô hình Kanban (Todo $\rightarrow$ Doing $\rightarrow$ Done) đã chứng minh được hiệu quả vượt trội trong việc tối ưu hóa quy trình làm việc.
+Môn học \textbf{Các công nghệ lập trình hiện đại} đặt ra yêu cầu sinh viên phải tiếp cận, nghiên cứu và áp dụng các công nghệ, framework tiên tiến đang được sử dụng rộng rãi trong môi trường doanh nghiệp thực tế. Trong bức tranh toàn cảnh của hệ sinh thái lập trình Web Frontend hiện nay, \textbf{ReactJS} nổi lên như một công nghệ dẫn đầu, định hình lại hoàn toàn cách thức xây dựng giao diện người dùng (User Interface).
 
-Nhóm chọn đề tài xây dựng ứng dụng \textbf{Trello Mini} sử dụng \textbf{ReactJS} vì:
+Không chỉ là một thư viện phổ biến nhất thế giới (theo khảo sát của Stack Overflow trong nhiều năm liên tiếp), React còn mang theo những triết lý lập trình hiện đại và đột phá. Thay vì quản lý DOM một cách thủ công và dễ gây lỗi như Vanilla JavaScript hay jQuery, React giới thiệu mô hình \textbf{Virtual DOM} kết hợp với luồng dữ liệu một chiều (One-way Data Flow) và kiến trúc hướng Component (Component-based). Sự chuyển dịch từ Class Components sang Functional Components kết hợp với \textbf{React Hooks} càng làm cho mã nguồn trở nên gọn gàng, tái sử dụng cao và dễ bảo trì.
+
+Để có thể hiểu sâu sắc và chứng minh sức mạnh của các khái niệm lý thuyết trừu tượng này, nhóm cần một bài toán có độ phức tạp về State (trạng thái) và tính tương tác UI cao. Đó là lý do nhóm quyết định chọn đề tài xây dựng ứng dụng \textbf{Trello Mini – Kanban Task Management System}. Bài toán quản lý công việc theo mô hình Kanban (Todo $\rightarrow$ Doing $\rightarrow$ Done) với thao tác \textbf{Kéo Thả (Drag \& Drop)} là một thử thách lý tưởng để áp dụng tối đa các công nghệ hiện đại:
 \begin{itemize}
-    \item \textbf{Kiến trúc dựa trên Component:} Rất phù hợp để xây dựng các thành phần lồng nhau của bảng Kanban (Board > List > Card).
-    \item \textbf{State-driven rendering:} Giúp cập nhật giao diện ngay lập tức khi trạng thái công việc thay đổi (kéo thả card).
-    \item \textbf{Hệ sinh thái phong phú:} Các thư viện như \texttt{dnd-kit}, \texttt{React Router} giúp xử lý các bài toán phức tạp một cách hiệu quả.
+    \item Ứng dụng tư duy \textbf{Component-based} để bóc tách giao diện lồng nhau phức tạp (Bảng $\rightarrow$ Danh sách $\rightarrow$ Thẻ).
+    \item Sử dụng \textbf{Context API} và \textbf{useReducer} để triển khai kiến trúc Global State Management, giải quyết bài toán Prop Drilling.
+    \item Tích hợp hệ sinh thái hiện đại đi kèm như \textbf{TypeScript} (bảo đảm an toàn kiểu dữ liệu), \textbf{React Router v6 Data Mode} (tối ưu hóa điều hướng) và thư viện kéo thả \textbf{dnd-kit}.
+\end{itemize}
+Thông qua việc giải quyết bài toán cụ thể này, nhóm sẽ chứng minh được năng lực làm chủ hệ sinh thái ReactJS - một đại diện tiêu biểu cho "Công nghệ lập trình hiện đại".
+
+\section{Mục tiêu của đề tài}
+Thông qua việc thực hiện đề tài này, nhóm hướng tới việc đạt được các mục tiêu sau:
+\begin{itemize}
+    \item \textbf{Mục tiêu về kiến thức:} Củng cố và hiểu sâu sắc các khái niệm cốt lõi của ReactJS. Nắm vững cách sử dụng React Hooks (\texttt{useState}, \texttt{useEffect}), đặc biệt là tự xây dựng các Custom Hooks (\texttt{useAuth}, \texttt{useBoards}, \texttt{useCards}) để tách biệt logic khỏi giao diện. Hiểu rõ cách triển khai Global State bằng \texttt{Context API} kết hợp \texttt{useReducer}.
+    \item \textbf{Mục tiêu về kỹ năng thực hành:} Tự tay xây dựng hoàn chỉnh một ứng dụng quản lý công việc dạng Single Page Application (SPA). Nắm được kỹ năng xử lý các thao tác tương tác phức tạp như Kéo \& Thả (Drag and Drop), định tuyến nâng cao bảo vệ quyền truy cập (Protected Routes) và lưu trữ dữ liệu bền vững trên trình duyệt (Local Storage Persistence).
+    \item \textbf{Mục tiêu phát triển tư duy:} Rèn luyện tư duy thiết kế cấu trúc dữ liệu (Data Modeling) cho ứng dụng Frontend, tư duy chia nhỏ component và kỹ năng làm việc nhóm, quản lý mã nguồn.
 \end{itemize}
 
-\section{Mục tiêu báo cáo}
+\section{Phạm vi nghiên cứu và Giới hạn đề tài}
+Do thời gian và nguồn lực có hạn, dự án Trello Mini được giới hạn trong các phạm vi sau:
 \begin{itemize}
-    \item \textbf{Mục tiêu về kiến thức:} Hiểu sâu về React Hooks (useAuth, useBoards, useCards), Context API, và quy trình xử lý State trong ứng dụng phức tạp.
-    \item \textbf{Mục tiêu về kỹ năng:} Xây dựng hoàn chỉnh một ứng dụng quản lý công việc có tính năng kéo thả, phân quyền truy cập (Protected Routes) và lưu trữ dữ liệu bền vững (Local Storage).
-\end{itemize}
-
-\section{Phạm vi nghiên cứu}
-\begin{itemize}
-    \item Tập trung vào xử lý logic phía Client-side.
-    \item Mô phỏng quá trình Authentication (Fake Auth).
-    \item Quản lý dữ liệu tập trung qua Context API thay vì dùng Backend thực tế trong giai đoạn này.
+    \item \textbf{Tập trung vào Frontend (Client-side):} Ứng dụng chủ yếu xử lý logic, tính toán hiển thị và quản lý trạng thái ở phía trình duyệt của người dùng.
+    \item \textbf{Mô phỏng xác thực (Fake Authentication):} Tính năng đăng nhập/đăng xuất được thiết kế nhằm mục đích phân luồng giao diện (Protected Routes), quá trình xác thực không gửi yêu cầu lên máy chủ thật mà lưu trạng thái tạm thời.
+    \item \textbf{Lưu trữ dữ liệu cục bộ:} Thay vì xây dựng Backend (NodeJS/Database) hoặc kết nối với BaaS (Firebase, Supabase), hệ thống sử dụng \texttt{Local Storage} của HTML5 API để lưu trữ toàn bộ dữ liệu (Board, List, Card). Điều này đảm bảo dữ liệu không bị mất khi tải lại trang, phục vụ tốt cho mục đích demo và chứng minh luồng dữ liệu (State Flow).
+    \item \textbf{Chưa hỗ trợ cộng tác thời gian thực (Real-time Collaboration):} Ở phiên bản hiện tại, hệ thống chạy độc lập trên một thiết bị và chưa hỗ trợ nhiều người dùng cùng lúc thao tác trên một bảng.
 \end{itemize}
 
 \section{Kế hoạch và Tiến độ thực hiện (Timeline)}
+Để đảm bảo tiến độ và chất lượng của đồ án, nhóm đã thống nhất chia quá trình phát triển thành 4 giai đoạn chính, được mô tả chi tiết trong bảng dưới đây:
+
 \begin{table}[H]
     \centering
-    \begin{tabular}{|l|l|p{4cm}|l|p{3cm}|}
+    \begin{tabular}{|l|l|p{4.5cm}|l|p{3.5cm}|}
     \hline
     \textbf{Giai đoạn} & \textbf{Thời gian} & \textbf{Nội dung công việc chính} & \textbf{Người phụ trách} & \textbf{Mục tiêu đầu ra} \\ \hline
-    1. Nghiên cứu & Tuần 1-2 & Tìm hiểu React Hooks, Context API, cài đặt project & Cả nhóm & Cài xong IDE, Hello World \\ \hline
-    2. Thực hành & Tuần 3-5 & Xây dựng các component: Board, List, Card & Cả nhóm & Hoàn thành UI cơ bản \\ \hline
-    3. Tích hợp & Tuần 6-8 & Xử lý Kéo thả (dnd-kit) và Global State & Leader & Ứng dụng chạy được luồng chính \\ \hline
-    4. Hoàn thiện & Tuần 9 & Local storage, fix bug, viết báo cáo & Cả nhóm & Báo cáo hoàn chỉnh + Slide \\ \hline
+    1. Nghiên cứu & Tuần 1-2 & Tìm hiểu tài liệu React, Vite, Tailwind CSS. Thiết kế cấu trúc thư mục, định nghĩa TypeScript Interfaces. & Cả nhóm & Cài đặt xong IDE, khởi tạo project cơ bản (Hello World). \\ \hline
+    2. Thực hành UI & Tuần 3-5 & Dựng Layout tĩnh, xây dựng các component hiển thị: Board, List, Card, Modal, Input Forms. & Cả nhóm & Giao diện (UI) tĩnh hoàn chỉnh, khớp với thiết kế. \\ \hline
+    3. Tích hợp Logic& Tuần 6-8 & Thiết lập Context API, Reducer. Viết Custom Hooks. Tích hợp thư viện \texttt{dnd-kit} xử lý Kéo Thả. & Leader & Ứng dụng hoạt động với dữ liệu thực, kéo thả thành công. \\ \hline
+    4. Hoàn thiện & Tuần 9 & Đồng bộ Local Storage, kiểm thử và vá lỗi (Fix bugs). Viết tài liệu báo cáo và chuẩn bị slide thuyết trình. & Cả nhóm & Báo cáo hoàn chỉnh + Mã nguồn hoạt động ổn định. \\ \hline
     \end{tabular}
-    \caption{Kế hoạch thực hiện đề tài}
+    \caption{Kế hoạch triển khai dự án Trello Mini}
 \end{table}
 
-\section{Cấu trúc báo cáo}
-Báo cáo gồm 4 phần chính:
+\section{Cấu trúc của Báo cáo}
+Báo cáo đồ án được trình bày một cách logic, đi từ tổng quan lý thuyết đến phân tích thiết kế và cuối cùng là quá trình triển khai thực tế. Báo cáo bao gồm 4 phần chính:
 \begin{enumerate}
-    \item \textbf{Phần 1:} Tổng quan về ReactJS và nhu cầu thị trường.
-    \item \textbf{Phần 2:} Kiến thức cốt lõi (Hooks, Context, Router).
-    \item \textbf{Phần 3:} Thiết kế hệ thống và demo sản phẩm Trello Mini.
-    \item \textbf{Phần 4:} Tổng kết và hướng phát triển.
+    \item \textbf{Phần 1 - Tổng quan và Phân tích thị trường:} Trình bày bối cảnh ra đời của ReactJS, các đặc điểm kiến trúc nổi bật và phân tích nhu cầu tuyển dụng trên thị trường hiện nay.
+    \item \textbf{Phần 2 - Kiến thức cốt lõi và Thực hành:} Nêu rõ cách thức thiết lập môi trường phát triển, giải thích các khái niệm nền tảng được áp dụng trong dự án như React Hooks, Routing, Context API.
+    \item \textbf{Phần 3 - Xây dựng đồ án tổng hợp:} Là phần trọng tâm, mô tả chi tiết bài toán, chức năng của hệ thống Trello Mini, thiết kế kiến trúc Component, luồng dữ liệu (State Flow) và các tính năng nâng cao.
+    \item \textbf{Phần 4 - Tổng kết và Bài học kinh nghiệm:} Đánh giá kết quả đạt được so với mục tiêu ban đầu, chỉ ra những hạn chế và đề xuất hướng phát triển mở rộng trong tương lai.
 \end{enumerate}

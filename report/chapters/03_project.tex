@@ -17,15 +17,18 @@ Giải quyết vấn đề quản lý công việc và theo dõi tiến độ tr
 \section{Kiến trúc linh kiện (Component Tree)}
 \begin{verbatim}
 App
- +- Router
+ +- RouterProvider
     +- AuthProvider
-    +- BoardProvider
-       +- Layout
-       +- Pages (Lazy loading)
-          +- LoginPage
-          +- DashboardPage
-          +- BoardPage
-             +- Components (Board > List > Card)
+       +- BoardProvider
+          +- MainLayout
+             +- Pages (Login, Dashboard, BoardDetail)
+                +- Features/Boards/Components
+                   +- BoardCard
+                   +- List
+                      +- TaskCard
+                      +- AddCardForm
+                   +- AddListForm
+                   +- CardModal
 \end{verbatim}
 
 \chapter{Triển khai và Demo sản phẩm}
@@ -42,7 +45,8 @@ Khi người dùng thêm một Card mới:
 \section{Tính năng nâng cao}
 \begin{itemize}
     \item \textbf{Local Storage Persistence:} Lưu trữ dữ liệu trực tiếp trong trình duyệt, thông tin không bị mất khi làm mới trang.
-    \item \textbf{Search Card:} Bộ lọc tìm kiếm công việc theo từ khóa ngay trên Board.
+    \item \textbf{Card Detail Modal:} Popup chi tiết công việc cho phép quản lý nhãn (Labels), ngày hết hạn (Due Date) và mô tả dài.
+    \item \textbf{Dynamic Form Inputs:} Sử dụng các form inline (\texttt{AddCardForm}, \texttt{AddListForm}) để tăng tính tương tác thay vì chuyển trang.
 \end{itemize}
 
 \section{Hướng dẫn cài đặt (Deployment)}

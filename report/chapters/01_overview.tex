@@ -2,35 +2,55 @@
 
 \chapter{Giới thiệu về ReactJS}
 
-\section{Lịch sử và Bối cảnh}
+\section{Lịch sử hình thành và Bối cảnh ra đời}
+Trước năm 2013, phần lớn các ứng dụng web trên thế giới được xây dựng dựa trên mô hình truyền thống: Server tạo ra các trang HTML tĩnh và gửi về Client. Khi các ứng dụng web ngày càng trở nên phức tạp, yêu cầu tương tác cao hơn, việc quản lý DOM (Document Object Model) thông qua Vanilla JavaScript hoặc jQuery dần bộc lộ nhiều điểm yếu. Mã nguồn trở nên rối rắm (Spaghetti code), khó bảo trì và đặc biệt là hiệu năng giảm sút nghiêm trọng khi có quá nhiều thao tác cập nhật giao diện cùng lúc.
+
+Trong bối cảnh đó, ReactJS được phát triển bởi Jordan Walke - một kỹ sư phần mềm tại Facebook (nay là Meta). React ban đầu được tạo ra để giải quyết vấn đề cụ thể của Facebook: làm sao để cập nhật giao diện của tính năng News Feed và Chat một cách liên tục, theo thời gian thực mà không làm gián đoạn trải nghiệm người dùng. Năm 2013, ReactJS chính thức được phát hành dưới dạng mã nguồn mở và nhanh chóng tạo ra một cuộc cách mạng trong lĩnh vực lập trình Frontend.
+
+\section{Kiến trúc và Nguyên lý hoạt động cốt lõi}
+Sự thành công của ReactJS không đến từ việc cung cấp nhiều tính năng có sẵn, mà đến từ một triết lý thiết kế hoàn toàn mới. Các nguyên lý hoạt động cốt lõi bao gồm:
+
 \begin{itemize}
-    \item Được phát triển bởi Facebook (Meta) và ra mắt chính thức vào năm 2013.
-    \item \textbf{Vấn đề cốt lõi:} React sinh ra để giải quyết vấn đề hiệu năng và quản lý dữ liệu khi ứng dụng web trở nên cực kỳ phức tạp và có nhiều trạng thái thay đổi liên tục.
+    \item \textbf{DOM Ảo (Virtual DOM):} Đây là một trong những đột phá lớn nhất của React. Thay vì can thiệp trực tiếp vào DOM thật (một thao tác rất tốn kém tài nguyên), React tạo ra một bản sao nhẹ hơn của DOM trên bộ nhớ gọi là Virtual DOM. Khi trạng thái (State) thay đổi, React sẽ tạo ra một Virtual DOM mới, so sánh (diffing) nó với Virtual DOM cũ để tìm ra những điểm khác biệt tối thiểu. Sau đó, nó mới cập nhật chính xác những điểm khác biệt đó lên DOM thật (quá trình Reconciliation). Điều này giúp ứng dụng hoạt động cực kỳ mượt mà.
+
+    \item \textbf{Kiến trúc hướng Component (Component-based Architecture):} React khuyến khích lập trình viên chia nhỏ giao diện người dùng thành các phần độc lập, có thể tái sử dụng gọi là Component. Ví dụ trong dự án Trello Mini, hệ thống được chia thành \texttt{Board}, \texttt{List}, \texttt{Card}. Mỗi Component tự quản lý trạng thái hiển thị của riêng nó, giúp mã nguồn dễ đọc, dễ kiểm thử và dễ bảo trì khi dự án phình to.
+
+    \item \textbf{Luồng dữ liệu một chiều (One-way Data Flow):} Khác với cơ chế Binding hai chiều (Two-way Data Binding) của Angular, React áp dụng luồng dữ liệu một chiều chảy từ Component cha xuống Component con thông qua \texttt{props}. Điều này giúp việc theo dõi sự thay đổi của dữ liệu trở nên dễ đoán (predictable), giảm thiểu tối đa các lỗi liên quan đến trạng thái ứng dụng.
 \end{itemize}
 
-\section{Kiến trúc và Nguyên lý hoạt động}
+\section{Đánh giá và So sánh công nghệ (Critical Thinking)}
+Để hiểu rõ tại sao nhóm chọn React cho đồ án này, cần có sự đánh giá và so sánh với các công nghệ khác:
+
+\subsection{Tại sao không dùng Vanilla JS / jQuery?}
+Với một ứng dụng như Kanban Board, việc kéo thả một Card từ List A sang List B đòi hỏi phải cập nhật lại giao diện của cả hai List, tính toán vị trí, và cập nhật mảng dữ liệu gốc. Nếu dùng JavaScript thuần, lập trình viên phải viết code tìm kiếm thủ công từng node DOM, gỡ bỏ và chèn node mới. Điều này rất dễ gây lỗi đồng bộ giữa UI và Dữ liệu. Với React, chúng ta theo triết lý \textit{State-Driven UI} (Giao diện được điều khiển bởi trạng thái): Lập trình viên không bao giờ chạm vào DOM, chỉ cần cập nhật mảng dữ liệu State, React sẽ tự động vẽ lại UI.
+
+\subsection{ReactJS so với Vue.js và Angular}
 \begin{itemize}
-    \item \textbf{Virtual DOM:} Tối ưu hóa việc cập nhật giao diện thông qua quá trình diffing.
-    \item \textbf{Component-based architecture:} Ứng dụng được chia nhỏ thành các thành phần độc lập (App > Router > AuthProvider > Layout...).
-    \item \textbf{One-way Data Flow:} Dữ liệu chảy từ cha xuống con, giúp kiểm soát trạng thái dễ dàng.
+    \item \textbf{Angular:} Là một Framework đồ sộ, cung cấp sẵn mọi thứ (Routing, HTTP Client, Form Validation). Tuy nhiên, nó có \textit{learning curve} (đường cong học tập) rất dốc và kiến trúc đôi khi quá nặng nề cho các dự án vừa và nhỏ.
+    \item \textbf{Vue.js:} Kết hợp được ưu điểm của cả React và Angular, dễ học, code trực quan. Tuy nhiên, hệ sinh thái và cộng đồng của Vue ở quy mô doanh nghiệp lớn vẫn chưa thể bằng React.
+    \item \textbf{ReactJS:} Bản chất chỉ là một thư viện (Library) chứ không phải Framework. Nó cung cấp sự linh hoạt tối đa. Lập trình viên có quyền tự do lựa chọn thư viện đi kèm (như chọn \texttt{React Router} cho định tuyến, \texttt{Zustand} hoặc \texttt{Context} cho State Management). Điều này phù hợp với triết lý học tập: tự xây dựng từng viên gạch để hiểu rõ bản chất hệ thống.
 \end{itemize}
 
-\section{So sánh và Đánh giá (Critical Thinking)}
-\begin{itemize}
-    \item \textbf{So sánh:} React vs Vue/Angular. React có tính linh hoạt cao hơn nhờ kiến trúc mở và thư viện phong phú, nhưng yêu cầu người lập trình phải tự đưa ra nhiều quyết định cấu trúc (Design Patterns).
-    \item \textbf{Phân tích Trade-off:} NÊN dùng cho các Single Page App (SPA) cần tương tác phức tạp (như bảng Kanban). KHÔNG NÊN dùng cho các website tĩnh cực đơn giản chỉ cần vài trang HTML thuần.
-\end{itemize}
+\textbf{Phân tích Trade-off:} React cực kỳ phù hợp cho các Single Page App (SPA) mang tính tương tác phức tạp cao (như bảng Trello, Dashboard quản trị). Ngược lại, không nên dùng React cho các website dạng landing page tĩnh, nặng về SEO nội dung văn bản đơn thuần, vì nó sinh ra gánh nặng tải JavaScript không cần thiết ban đầu.
 
 \chapter{Cơ hội nghề nghiệp và Nhu cầu thị trường}
 
-\section{Vị trí công việc}
+\section{Vị trí công việc thực tế}
+Việc thành thạo ReactJS mở ra rất nhiều cơ hội việc làm hấp dẫn trong ngành CNTT, tiêu biểu như:
 \begin{itemize}
-    \item Frontend Developer, Web Developer.
-    \item Fullstack Developer (khi kết hợp với Node.js/Next.js).
+    \item \textbf{Frontend Developer / Web Engineer:} Chịu trách nhiệm xây dựng giao diện tương tác phía người dùng, chuyển đổi thiết kế Figma thành code thực tế.
+    \item \textbf{Fullstack Developer:} Kết hợp ReactJS với NodeJS (Express) hoặc Next.js để phát triển toàn bộ hệ thống từ Database đến UI.
+    \item \textbf{Mobile App Developer:} Nhờ có nền tảng React, lập trình viên có thể dễ dàng chuyển đổi sang học \textbf{React Native} để làm ứng dụng di động cho cả iOS và Android chỉ với một tập mã nguồn.
 \end{itemize}
 
-\section{Nhu cầu tuyển dụng thực tế}
-ReactJS hiện đang là thư viện JavaScript phổ biến nhất thế giới (theo Stack Overflow Survey), với nhu cầu tuyển dụng cực lớn từ các tập đoàn công nghệ lớn (Meta, Netflix, Airbnb...).
+\section{Nhu cầu tuyển dụng trên thị trường}
+Theo khảo sát thường niên của \textit{Stack Overflow} và \textit{State of JS}, ReactJS liên tục giữ vững ngôi vị là thư viện web được sử dụng phổ biến nhất và được yêu thích nhất thế giới.
+Tại thị trường Việt Nam (dựa trên dữ liệu từ các nền tảng như ITviec, TopCV), các từ khóa liên quan đến "React", "ReactJS", "NextJS" luôn nằm trong Top đầu số lượng tin tuyển dụng. Các tập đoàn công nghệ lớn trên thế giới như Meta, Netflix, Airbnb, Uber và các công ty lớn tại Việt Nam như VNG, MoMo, Shopee đều đang sử dụng React trong các hệ thống cốt lõi của họ.
 
-\section{Mức lương tham khảo}
-[Số liệu tham khảo: Fresher (8-12M), Junior (15-25M), Senior (30M+)]
+\section{Mức lương tham khảo và Lộ trình thăng tiến}
+Nhu cầu cao đồng nghĩa với việc mức đãi ngộ cho lập trình viên ReactJS luôn ở mức cạnh tranh so với mặt bằng chung. Dưới đây là mức lương tham khảo (tùy thuộc vào năng lực, quy mô công ty và ngoại ngữ):
+\begin{itemize}
+    \item \textbf{Fresher (Mới ra trường - Dưới 1 năm kinh nghiệm):} Có thể nắm vững kiến trúc cơ bản, viết được các component tĩnh và thao tác API đơn giản. Mức lương dao động từ \textbf{8.000.000 VNĐ - 12.000.000 VNĐ / tháng}.
+    \item \textbf{Junior (1 - 2 năm kinh nghiệm):} Xử lý tốt các logic phức tạp, am hiểu vòng đời của component, tối ưu hóa re-render và sử dụng thành thạo Redux/Context. Mức lương từ \textbf{15.000.000 VNĐ - 25.000.000 VNĐ / tháng}.
+    \item \textbf{Senior (Trên 3-4 năm kinh nghiệm):} Đóng vai trò thiết kế kiến trúc hệ thống, tư vấn công nghệ, giải quyết các bài toán về hiệu năng (Performance) và bảo mật cho các ứng dụng hàng triệu lượt truy cập. Mức lương có thể vượt mức \textbf{35.000.000 VNĐ - 50.000.000 VNĐ / tháng} hoặc cao hơn với các công ty đa quốc gia.
+\end{itemize}

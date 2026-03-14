@@ -5,6 +5,8 @@ export interface ICard {
   title: string;
   description?: string;
   createdAt: string; // ISO date string
+  dueDate?: string; // ISO date string for modal detail
+  labels?: string[]; // Array of label names/colors for modal detail
 }
 
 export interface IList {

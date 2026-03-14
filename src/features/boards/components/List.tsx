@@ -1,5 +1,6 @@
 import type { IList } from "../../../types";
 import TaskCard from "./TaskCard";
+import AddCardForm from "./AddCardForm";
 
 interface ListProps {
   list: IList;
@@ -33,14 +34,11 @@ const List = ({ list }: ListProps) => {
 
       <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
         {list.cards.map((card) => (
-          <TaskCard key={card.id} card={card} />
+          <TaskCard key={card.id} card={card} listTitle={list.title} />
         ))}
       </div>
 
-      <button className="mt-4 flex items-center gap-2 w-full p-2 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors">
-        <span className="material-symbols-outlined text-lg">add</span>
-        Thêm thẻ
-      </button>
+      <AddCardForm listId={list.id} />
     </div>
   );
 };
