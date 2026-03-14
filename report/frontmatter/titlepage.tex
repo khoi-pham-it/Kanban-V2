@@ -1,0 +1,77 @@
+% ================================================================
+% TRANG BÌA BÁO CÁO (PROFESSIONAL REPORT TITLE PAGE)
+% ================================================================
+
+\newcommand{\makecustomtitle}{
+    \begin{titlepage}
+        \newgeometry{
+            left=3cm,
+            right=2cm,
+            top=2cm,
+            bottom=2cm
+        }
+
+        % --- KHUNG VIỀN TRANG TRỌNG ---
+        \begin{tikzpicture}[remember picture,overlay]
+            % Viền ngoài dày
+            \draw[line width=2pt]
+                ([xshift=2cm,yshift=-1.5cm]current page.north west)
+                rectangle
+                ([xshift=-1.5cm,yshift=1.5cm]current page.south east);
+            % Viền trong mảnh
+            \draw[line width=0.5pt]
+                ([xshift=2.15cm,yshift=-1.65cm]current page.north west)
+                rectangle
+                ([xshift=-1.65cm,yshift=1.65cm]current page.south east);
+
+            % Họa tiết góc
+            \foreach \x/\y/\angle in {2.15/-1.65/0, -1.65/-1.65/90, -1.65/1.65/180, 2.15/1.65/-90} {
+                \begin{scope}[shift={([xshift=\x cm,yshift=\y cm]current page.north west)}, rotate=\angle]
+                    \draw[line width=1pt] (0,-0.5) -- (0,0) -- (0.5,0);
+                \end{scope}
+            }
+        \end{tikzpicture}
+
+        \begin{center}
+            % --- THÔNG TIN TRƯỜNG ---
+            {\large\bfseries ĐẠI HỌC SÀI GÒN}\\[0.2cm]
+            {\large\bfseries KHOA CÔNG NGHỆ THÔNG TIN}\\[0.5cm]
+            \rule{4cm}{0.8pt}\\[1.2cm]
+
+            % --- LOGO ---
+            \includegraphics[width=3.5cm]{images/logo_sgu.png}
+            \\[1.2cm]
+
+            % --- TIÊU ĐỀ BÁO CÁO ---
+            {\Large\bfseries BÁO CÁO MÔN HỌC}\\[0.4cm]
+            {\LARGE\bfseries CÁC CÔNG NGHỆ LẬP TRÌNH HIỆN ĐẠI}\\[3.5cm]
+
+            % --- TÊN ĐỀ TÀI ---
+            {\large\bfseries ĐỀ TÀI}\\[0.6cm]
+            {\fontsize{20}{24}\selectfont\bfseries TÌM HIỂU VÀ ỨNG DỤNG CÔNG NGHỆ REACTJS}\\[0.3cm]
+
+            % --- THÔNG TIN THỰC HIỆN ---
+            \begin{flushleft}
+                \hspace{2.5cm}
+                \begin{tabular}{ll}
+                    \textbf{Giảng viên hướng dẫn:} & Phạm Thi Vương \\[0.4cm]
+                    \textbf{Nhóm thực hiện:}       & 30 \\[0.4cm]
+                    \textbf{Sinh viên thực hiện:}  & Mai Trần Tuấn Kiệt - 3122560038 \\[0.2cm]
+                                                   & Vũ Lê Đức Anh - 3122560002 \\[0.2cm]
+                                                   & Phạm Nguyễn Nguyên Khôi - 3121410281 \\[0.4cm]
+                \end{tabular}
+            \end{flushleft}
+
+            \vfill
+
+            % --- ĐỊA DANH & THỜI GIAN ---
+            {\large\bfseries TP. HỒ CHÍ MINH, \today}
+        \end{center}
+
+        \restoregeometry
+    \end{titlepage}
+
+    \newpage
+    \thispagestyle{empty}
+    \mbox{}
+}

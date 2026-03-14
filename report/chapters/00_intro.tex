@@ -1,0 +1,48 @@
+\chapter*{LỜI MỞ ĐẦU}
+\addcontentsline{toc}{chapter}{LỜI MỞ ĐẦU}
+
+\section{Lý do chọn đề tài}
+Mô hình Kanban (Todo $\rightarrow$ Doing $\rightarrow$ Done) đã chứng minh được hiệu quả vượt trội trong việc tối ưu hóa quy trình làm việc.
+
+Nhóm chọn đề tài xây dựng ứng dụng \textbf{Trello Mini} sử dụng \textbf{ReactJS} vì:
+\begin{itemize}
+    \item \textbf{Kiến trúc dựa trên Component:} Rất phù hợp để xây dựng các thành phần lồng nhau của bảng Kanban (Board > List > Card).
+    \item \textbf{State-driven rendering:} Giúp cập nhật giao diện ngay lập tức khi trạng thái công việc thay đổi (kéo thả card).
+    \item \textbf{Hệ sinh thái phong phú:} Các thư viện như \texttt{dnd-kit}, \texttt{React Router} giúp xử lý các bài toán phức tạp một cách hiệu quả.
+\end{itemize}
+
+\section{Mục tiêu báo cáo}
+\begin{itemize}
+    \item \textbf{Mục tiêu về kiến thức:} Hiểu sâu về React Hooks (useAuth, useBoards, useCards), Context API, và quy trình xử lý State trong ứng dụng phức tạp.
+    \item \textbf{Mục tiêu về kỹ năng:} Xây dựng hoàn chỉnh một ứng dụng quản lý công việc có tính năng kéo thả, phân quyền truy cập (Protected Routes) và lưu trữ dữ liệu bền vững (Local Storage).
+\end{itemize}
+
+\section{Phạm vi nghiên cứu}
+\begin{itemize}
+    \item Tập trung vào xử lý logic phía Client-side.
+    \item Mô phỏng quá trình Authentication (Fake Auth).
+    \item Quản lý dữ liệu tập trung qua Context API thay vì dùng Backend thực tế trong giai đoạn này.
+\end{itemize}
+
+\section{Kế hoạch và Tiến độ thực hiện (Timeline)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|p{4cm}|l|p{3cm}|}
+    \hline
+    \textbf{Giai đoạn} & \textbf{Thời gian} & \textbf{Nội dung công việc chính} & \textbf{Người phụ trách} & \textbf{Mục tiêu đầu ra} \\ \hline
+    1. Nghiên cứu & Tuần 1-2 & Tìm hiểu React Hooks, Context API, cài đặt project & Cả nhóm & Cài xong IDE, Hello World \\ \hline
+    2. Thực hành & Tuần 3-5 & Xây dựng các component: Board, List, Card & Cả nhóm & Hoàn thành UI cơ bản \\ \hline
+    3. Tích hợp & Tuần 6-8 & Xử lý Kéo thả (dnd-kit) và Global State & Leader & Ứng dụng chạy được luồng chính \\ \hline
+    4. Hoàn thiện & Tuần 9 & Local storage, fix bug, viết báo cáo & Cả nhóm & Báo cáo hoàn chỉnh + Slide \\ \hline
+    \end{tabular}
+    \caption{Kế hoạch thực hiện đề tài}
+\end{table}
+
+\section{Cấu trúc báo cáo}
+Báo cáo gồm 4 phần chính:
+\begin{enumerate}
+    \item \textbf{Phần 1:} Tổng quan về ReactJS và nhu cầu thị trường.
+    \item \textbf{Phần 2:} Kiến thức cốt lõi (Hooks, Context, Router).
+    \item \textbf{Phần 3:} Thiết kế hệ thống và demo sản phẩm Trello Mini.
+    \item \textbf{Phần 4:} Tổng kết và hướng phát triển.
+\end{enumerate}

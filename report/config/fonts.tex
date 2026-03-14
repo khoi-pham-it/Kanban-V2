@@ -1,0 +1,43 @@
+% ================================================================
+% CẤU HÌNH TIẾNG VIỆT VÀ FONT CHỮ (FONTS & LANGUAGE)
+% ================================================================
+% File này chứa cấu hình về font chữ và ngôn ngữ tiếng Việt
+
+% --- Cấu hình ngôn ngữ ---
+\usepackage[vietnamese]{babel}
+\usepackage{fontspec}
+
+% --- Chọn font chữ ---
+% Sử dụng Extension=.ttf để tránh lỗi font với XeLaTeX
+\setmainfont{CrimsonPro}[
+    Extension=.ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    BoldItalicFont=*-BoldItalic,
+    Path=/home/kiet/.local/share/fonts/Crimson_Pro/static/
+]
+
+\setsansfont{OpenSans}[
+    Extension=.ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    BoldItalicFont=*-BoldItalic,
+    Path=/home/kiet/.local/share/fonts/Open_Sans/static/
+]
+
+% Nếu không có CaskaydiaCove, dùng FreeMono làm fallback
+\setmonofont{FreeMono}    % Font đơn cách (monospace)
+
+% --- Điều chỉnh kích thước font ---
+\usepackage{anyfontsize}
+
+\renewcommand{\normalsize}{\fontsize{12}{14.5}\selectfont}
+\renewcommand{\small}{\fontsize{11}{13}\selectfont}
+\renewcommand{\footnotesize}{\fontsize{10}{12}\selectfont}
+\renewcommand{\large}{\fontsize{14}{17}\selectfont}
+\renewcommand{\Large}{\fontsize{16}{19}\selectfont}
+\renewcommand{\LARGE}{\fontsize{18}{22}\selectfont}
+\renewcommand{\huge}{\fontsize{20}{24}\selectfont}
+\renewcommand{\Huge}{\fontsize{24}{28}\selectfont}

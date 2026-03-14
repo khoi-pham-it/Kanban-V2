@@ -1,0 +1,53 @@
+\part{XÂY DỰNG ĐỒ ÁN TỔNG HỢP}
+
+\chapter{Phân tích và Thiết kế hệ thống}
+
+\section{Mô tả bài toán}
+Giải quyết vấn đề quản lý công việc và theo dõi tiến độ trong các nhóm làm việc (Todo $\rightarrow$ Doing $\rightarrow$ Done). Hệ thống cho phép người dùng trực quan hóa quy trình làm việc thông qua bảng Kanban.
+
+\section{Chức năng chính}
+\begin{itemize}
+    \item \textbf{Authentication:} Đăng nhập/Đăng xuất đơn giản với Protected Routes (Chỉ những người đã đăng nhập mới xem được Board).
+    \item \textbf{Board Dashboard:} Trang danh sách các dự án (Board).
+    \item \textbf{Kanban Board:} Gồm nhiều danh sách (List).
+    \item \textbf{Card Management:} Thêm, sửa, xóa các thẻ công việc (Card) trong List.
+    \item \textbf{Drag and Drop:} Kéo thả card giữa các list để thay đổi trạng thái công việc.
+\end{itemize}
+
+\section{Kiến trúc linh kiện (Component Tree)}
+\begin{verbatim}
+App
+ +- Router
+    +- AuthProvider
+    +- BoardProvider
+       +- Layout
+       +- Pages (Lazy loading)
+          +- LoginPage
+          +- DashboardPage
+          +- BoardPage
+             +- Components (Board > List > Card)
+\end{verbatim}
+
+\chapter{Triển khai và Demo sản phẩm}
+
+\section{Tích hợp hệ thống và Luồng dữ liệu (State Flow)}
+Khi người dùng thêm một Card mới:
+\begin{enumerate}
+    \item Nhập tiêu đề vào \texttt{AddCardForm}.
+    \item Dispatch hành động \texttt{ADD\_CARD} thông qua \texttt{useCards}.
+    \item \texttt{boardReducer} cập nhật trạng thái trong Context.
+    \item React tự động re-render các \texttt{List} bị thay đổi dữ liệu.
+\end{enumerate}
+
+\section{Tính năng nâng cao}
+\begin{itemize}
+    \item \textbf{Local Storage Persistence:} Lưu trữ dữ liệu trực tiếp trong trình duyệt, thông tin không bị mất khi làm mới trang.
+    \item \textbf{Search Card:} Bộ lọc tìm kiếm công việc theo từ khóa ngay trên Board.
+\end{itemize}
+
+\section{Hướng dẫn cài đặt (Deployment)}
+\begin{enumerate}
+    \item Giải nén mã nguồn.
+    \item Chạy \texttt{npm install} để cài đặt các thư viện cần thiết (\texttt{react-router-dom}, \texttt{dnd-kit}).
+    \item Chạy \texttt{npm run dev} để khởi động môi trường phát triển.
+\end{enumerate}

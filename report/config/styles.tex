@@ -1,0 +1,22 @@
+% ================================================================
+% ĐỊNH NGHĨA MACRO VÀ STYLE (CUSTOM MACROS & STYLES)
+% ================================================================
+% File này chứa các macro tùy chỉnh và định nghĩa style cho dự án
+
+% --- TRANG TRÍ TIÊU ĐỀ CHƯƠNG ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{black}}
+  {\Large\chaptertitlename\ \thechapter}
+  {1ex}
+  {\huge\MakeUppercase}
+  [\vspace{1ex}\rule{\textwidth}{1pt}]
+
+% Điều chỉnh khoảng cách trên và dưới của chapter
+\titlespacing{\chapter}{0pt}{0pt}{3ex}
+
+% --- TRANG TRÍ TIÊU ĐỀ PHẦN (PART) ---
+\titleformat{\part}[display]
+  {\centering\normalfont\huge\bfseries}
+  {\partname\ \thepart}
+  {2ex}
+  {\Huge\MakeUppercase}

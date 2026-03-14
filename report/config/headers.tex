@@ -1,0 +1,30 @@
+% ================================================================
+% TRANG TRÍ HEADER/FOOTER (HEADERS & FOOTERS)
+% ================================================================
+% File này chứa cấu hình cho phần đầu trang và chân trang
+
+\pagestyle{fancy}
+\fancyhf{}  % Xóa tất cả header/footer mặc định
+
+% Bỏ header line (đường kẻ trên header)
+\renewcommand{\headrulewidth}{0pt}
+
+% Thêm đường ngăn cách tinh tế cho footer
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\hbox to\headwidth{%
+  \color{gray!40}\leaders\hrule height \footrulewidth\hfill}}
+
+% Thiết lập footer
+\fancyfoot[LE,RO]{\small\textbf{\thepage}}                    % Số trang (trái-chẵn, phải-lẻ)
+\fancyfoot[RE]{\small\itshape\nouppercase{\leftmark}}        % Tên chapter (phải-chẵn)
+\fancyfoot[LO]{\small\itshape\nouppercase{\leftmark}}        % Tên chapter (trái-lẻ)
+
+% Style cho trang đầu chương (plain style)
+\fancypagestyle{plain}{
+  \fancyhf{}  % Xóa tất cả
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\footrule}{\hbox to\headwidth{%
+    \color{gray!40}\leaders\hrule height \footrulewidth\hfill}}
+  \fancyfoot[LE,RO]{\small\textbf{\thepage}}  % Số trang (trái-chẵn, phải-lẻ)
+}

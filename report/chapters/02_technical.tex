@@ -1,0 +1,56 @@
+\part{KIẾN THỨC CỐT LÕI VÀ THỰC HÀNH}
+
+\chapter{Thiết lập môi trường và Cấu trúc dự án chuẩn}
+
+\section{Công cụ cần thiết}
+\begin{itemize}
+    \item IDE: Visual Studio Code với các extension (ESLint, Prettier).
+    \item Package Manager: npm hoặc yarn.
+    \item Build tool: Vite hoặc Create React App.
+\end{itemize}
+
+\section{Cài đặt \& Hello World}
+Quy trình khởi tạo project với Vite: 
+\begin{verbatim}
+npm create vite@latest trello-mini --template react
+\end{verbatim}
+
+\section{Phân tích cấu trúc thư mục}
+Dự án được tổ chức theo kiến trúc chuẩn:
+\begin{itemize}
+    \item \texttt{src/components}: Chứa các thành phần giao diện dùng chung.
+    \item \texttt{src/context}: Quản lý Global State (Auth, Boards).
+    \item \texttt{src/hooks}: Chứa các custom hooks (\texttt{useAuth}, \texttt{useBoards}).
+    \item \texttt{src/pages}: Các trang chính (Login, Dashboard, Board).
+\end{itemize}
+
+\chapter{Các khái niệm nền tảng (Fundamentals)}
+
+\section{Lý thuyết về React Hooks}
+\begin{itemize}
+    \item \textbf{useState \& useReducer:} Quản lý trạng thái cục bộ và các logic phức tạp.
+    \item \textbf{useContext:} Giải quyết bài toán truyền dữ liệu qua nhiều cấp component (Prop Drilling).
+\end{itemize}
+
+\section{Custom Hooks (Bắt buộc)}
+Dự án sử dụng 3 custom hooks chính để tách biệt logic và giao diện:
+\begin{itemize}
+    \item \texttt{useAuth}: Quản lý đăng nhập, đăng xuất và phân quyền.
+    \item \texttt{useBoards}: Xử lý các thao tác với Board (Tạo, xóa, lấy danh sách).
+    \item \texttt{useCards}: Quản lý Card trong Board (Thêm, xóa, di chuyển).
+\end{itemize}
+
+\section{Routing và Lazy Loading}
+Sử dụng \texttt{React Router} để quản lý đường dẫn. Các trang (\texttt{LoginPage}, \texttt{DashboardPage}, \texttt{BoardPage}) được tải chậm (\textbf{Lazy Loading}) bằng \texttt{React.lazy()} để tối ưu hóa thời gian tải ban đầu.
+
+\chapter{Quản lý trạng thái và Tối ưu hóa}
+
+\section{Global State Design}
+Sử dụng \textbf{Context API + useReducer} để quản lý trạng thái tập trung. Cấu trúc State bao gồm:
+\begin{itemize}
+    \item \textbf{Auth State:} Thông tin người dùng và trạng thái đăng nhập.
+    \item \textbf{Board State:} Danh sách các board, list và card tương ứng.
+\end{itemize}
+
+\section{Tối ưu hiệu năng}
+Sử dụng \texttt{React.memo} và \texttt{useCallback} để tránh re-render không cần thiết các card khi người dùng thực hiện thao tác kéo thả.

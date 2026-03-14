@@ -1,0 +1,60 @@
+\documentclass[a4paper,12pt,twoside,openany]{book}
+
+% ================================================================
+% CẤU HÌNH DỰ ÁN - MODULAR STRUCTURE
+% ================================================================
+
+% --- Cấu hình khổ giấy và căn lề ---
+\input{config/page_setup.tex}
+
+% --- Cấu hình tiếng Việt và font chữ ---
+\input{config/fonts.tex}
+
+% --- Các gói tiện ích ---
+\input{config/packages.tex}
+
+% --- Trang trí header/footer ---
+\input{config/headers.tex}
+
+% --- Định nghĩa macro và style ---
+\input{config/styles.tex}
+
+% --- Trang bìa tự thiết kế ---
+\input{frontmatter/titlepage.tex}
+
+% ================================================================
+% THÔNG TIN BÁO CÁO
+% ================================================================
+\title{BÁO CÁO MÔN HỌC: CÁC CÔNG NGHỆ LẬP TRÌNH HIỆN ĐẠI}
+\author{Mai Trần Tuấn Kiệt}
+\date{\today}
+
+% ================================================================
+% NỘI DUNG CHÍNH
+% ================================================================
+\begin{document}
+
+% --- PHẦN ĐẦU (Front Matter) ---
+\frontmatter
+\makecustomtitle
+\tableofcontents
+
+% Lời mở đầu
+\include{chapters/00_intro}
+
+% --- PHẦN NỘI DUNG CHÍNH (Main Matter) ---
+\mainmatter
+
+% Nhúng các phần chính
+\include{chapters/01_overview}
+\include{chapters/02_technical}
+\include{chapters/03_project}
+\include{chapters/04_conclusion}
+
+% --- PHẦN PHỤ LỤC (Back Matter) ---
+\backmatter
+
+% Tài liệu tham khảo và Phụ lục
+\include{chapters/05_appendix}
+
+\end{document}
