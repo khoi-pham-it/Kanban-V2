@@ -1,7 +1,7 @@
-import type { IList, Id } from "../../../types";
+import type { IList, Id } from "../types";
 import TaskCard from "./TaskCard";
 import AddCardForm from "./AddCardForm";
-import { useBoardStore } from "../../../store/useBoardStore";
+import { useBoardStore } from "../store/useBoardStore";
 
 interface ListProps {
   list: IList;

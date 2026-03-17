@@ -4,76 +4,67 @@ Tài liệu này đóng vai trò là "bản đồ" giúp các lập trình viên
 
 ---
 
-## 1. Cấu trúc Component (Component Tree)
+## 1. Cấu trúc Folder và Component (Feature-Sliced Design)
 
-Trello Mini sử dụng kiến trúc Component-Based của React. Mọi thứ được chia nhỏ và lồng vào nhau theo nguyên tắc **từ tổng quát đến chi tiết (Top-Down)**:
+Trello Mini sử dụng kiến trúc Feature-Sliced Design (FSD) mở rộng. Kiến trúc này giúp dự án cực kỳ dễ mở rộng (scalable) bằng cách tách bạch các lớp và đóng gói theo từng domain (lĩnh vực) nghiệp vụ.
 
 ```text
-App (Root)
- ├─ RouterProvider (React Router v6 Data Mode)
- │   └─ AuthProvider (Quản lý User State)
- │       └─ BoardProvider (Quản lý Trello Data State)
- │           └─ MainLayout (Bao gồm Sidebar & Header)
- │               └─ Outlet (Nơi render các Pages)
- │
- ├─ Pages
- │   ├─ LoginPage
- │   ├─ Dashboard (Hiển thị các BoardCard)
- │   └─ BoardDetail (Hiển thị chi tiết một Bảng)
- │
- └─ Features/Boards/Components (Domain UI)
-     ├─ BoardCard (Thẻ đại diện cho 1 dự án ngoài Dashboard)
-     ├─ List (Cột trạng thái: Todo, Doing, Done...)
-     │   ├─ TaskCard (Thẻ công việc thực tế)
-     │   └─ AddCardForm (Form nhập thẻ mới)
-     ├─ AddListForm (Form thêm cột mới)
-     └─ CardModal (Popup xem chi tiết thẻ)
+src/
+├── app/               # Tầng khởi tạo ứng dụng (Router, Global styles)
+│   ├── App.tsx
+│   └── router.tsx
+│
+├── components/        # Tầng UI dùng chung toàn ứng dụng (Dumb components)
+│   ├── layout/        # Layouts như Header, Sidebar, MainLayout
+│   └── ui/            # UI Components (Buttons, Modals...)
+│
+├── features/          # Tầng tính năng cốt lõi (Domain logic)
+│   ├── auth/          # Tính năng đăng nhập
+│   └── kanban/        # Tính năng Kanban chính
+│       ├── components/  # List, TaskCard, BoardCard, AddCardForm...
+│       ├── store/       # Zustand slices chuyên biệt (boardSlice, listSlice...)
+│       └── types/       # Interfaces cho IBoard, IList, ICard
+│
+└── pages/             # Tầng Route hiển thị màn hình (gọi các features lại với nhau)
+    ├── auth/
+    │   └── LoginPage.tsx
+    └── boards/
+        ├── DashboardPage.tsx
+        └── BoardPage.tsx
 ```
 
-**Nguyên tắc cốt lõi:** UI Component CHỈ làm nhiệm vụ hiển thị (Presentational). Tuyệt đối không viết logic xử lý dữ liệu phức tạp (như biến đổi mảng, gọi API, lưu local storage) trực tiếp bên trong các file UI (`List.tsx`, `TaskCard.tsx`). Tất cả logic phải được đẩy ra ngoài (Custom Hooks & Reducers).
+**Nguyên tắc cốt lõi:** UI Component CHỈ làm nhiệm vụ hiển thị (Presentational). Tuyệt đối không viết logic xử lý dữ liệu phức tạp (như biến đổi mảng, cấu hình local storage) trực tiếp bên trong các file UI (`List.tsx`, `TaskCard.tsx`). Tất cả logic nghiệp vụ phải được đẩy ra ngoài tầng `store` của feature đó.
 
 ---
 
-## 2. Quản lý Trạng thái Toàn cục (Global State)
+## 2. Quản lý Trạng thái Toàn cục (Global State với Zustand)
 
-Thay vì truyền dữ liệu qua lại giữa hàng chục component (Prop Drilling), Trello Mini sử dụng **Context API** kết hợp với **useReducer** của React.
+Thay vì truyền dữ liệu qua lại giữa hàng chục component (Prop Drilling), Trello Mini sử dụng **Zustand** kết hợp với **Immer**.
 
-### 2.1. Tại sao lại là `useReducer`?
-Dữ liệu của Board rất phức tạp (Mảng chứa Mảng: Bảng -> Cột -> Thẻ). Nếu dùng `useState`, việc cập nhật sâu (deep update) sẽ rất dễ gây lỗi và khó tái sử dụng.
-`useReducer` cung cấp một hàm `dispatch(action)`. Bạn chỉ cần ném ra một "Chỉ thị" (Ví dụ: `ADD_CARD`), Reducer sẽ tự biết cách tìm đến đúng Cột và nhét Thẻ vào.
+### 2.1. Tại sao lại là `Zustand` thay vì `Context API`?
+Quản lý State bằng Context API và `useReducer` cho các state phức tạp (như mảng lồng mảng) thường đòi hỏi nhiều boilerplate code và có rủi ro lớn về hiệu năng do re-render dây chuyền.
+Zustand cực kỳ nhẹ, không cần bọc app trong nhiều Provider, kết hợp cực tốt với `immer` giúp viết logic thay đổi State dễ dàng như state khả biến (mutable) nhưng bản chất vẫn là bất biến (immutable). Thêm vào đó, Zustand hỗ trợ middleware `persist` tự động lưu state vào `localStorage`.
 
-### 2.2. Auth Context (`AuthContext.tsx`)
-- **State:** `{ user: User | null, isAuthenticated: boolean }`
-- **Nhiệm vụ:** Bao bọc toàn bộ ứng dụng. Cung cấp thông tin xem người dùng hiện tại là ai. Nếu `isAuthenticated` là `false`, React Router sẽ tự động đá người dùng về trang `/login` (Protected Route).
-- **Actions:** `LOGIN_SUCCESS`, `LOGOUT`.
-
-### 2.3. Board Context (`BoardContext.tsx`)
-- **State:** `{ boards: IBoard[], currentBoard: IBoard | null }`
-- **Nhiệm vụ:** Lưu trữ toàn bộ dữ liệu Trello của người dùng.
-- **Actions cần team implement:** 
-  - `SET_BOARDS` (Load lần đầu từ Local Storage)
-  - `CREATE_BOARD`, `DELETE_BOARD`
-  - `ADD_LIST`, `RENAME_LIST`, `DELETE_LIST`
-  - `ADD_CARD`, `UPDATE_CARD`, `DELETE_CARD`
-  - `MOVE_CARD` (Quan trọng nhất: Dùng cho Drag & Drop)
+### 2.2. Slice Pattern (`store/slices/`)
+- Mảng dữ liệu Kanban được chia thành các file slice nhỏ: `boardSlice`, `listSlice`, `cardSlice`.
+- **Nhiệm vụ:** Các actions (hàm xử lý) chỉ tập trung vào một nhóm chức năng cụ thể:
+  - `boardSlice`: `addBoard`, `deleteBoard`
+  - `listSlice`: `addList`, `deleteList`
+  - `cardSlice`: `addCard`, `deleteCard`
 
 ---
 
 ## 3. Custom Hooks (Lớp Giao Tiếp - Interface)
 
-Để các file UI không phải gọi `dispatch({ type: 'ADD_CARD', payload: ... })` một cách lằng nhằng và thô kệch, chúng ta tạo ra các Custom Hooks. Các hooks này đóng vai trò như một API nội bộ.
-
-1. **`useAuth()`**: Cung cấp hàm `login(email, pass)`, `logout()`, `user`.
-2. **`useBoards()`**: Cung cấp hàm `createBoard(title)`, `deleteBoard(id)`.
-3. **`useCards()`**: Cung cấp hàm `addCard(listId, title)`, `deleteCard(cardId)`, `moveCard(activeId, overId)`.
+Để các file UI dễ dàng truy xuất dữ liệu từ store, chúng ta sử dụng custom hook tạo ra từ Zustand.
 
 **Ví dụ thực tế trong file `AddCardForm.tsx`:**
 ```tsx
-// Team dev thay vì viết logic phức tạp, chỉ cần gọi hook:
-const { addCard } = useCards();
+// Lấy duy nhất hàm addCard từ store (tránh re-render không cần thiết)
+const addCard = useBoardStore((state) => state.addCard);
 
 const handleSubmit = () => {
-    addCard(listId, title); // Code UI cực kỳ sạch sẽ!
+    addCard(boardId, listId, title); // Code UI cực kỳ sạch sẽ!
 }
 ```
 
@@ -84,10 +75,10 @@ const handleSubmit = () => {
 Hãy tưởng tượng luồng đi của dữ liệu như một dòng sông một chiều (One-way data flow). Để người mới dễ hình dung, đây là những gì xảy ra khi user tạo một Card mới:
 
 1. **User Action:** Người dùng gõ "Học React" vào `AddCardForm` và nhấn Enter.
-2. **Hook Execution:** `AddCardForm` gọi hàm `addCard(listId, "Học React")` từ `useCards()`.
-3. **Dispatch Action:** Hàm `addCard` tạo ra một object `{ type: 'ADD_CARD', payload: { listId, card: mới } }` và truyền nó vào `dispatch()`.
-4. **Reducer Process:** `boardReducer` nhận được Action. Nó clone lại State cũ, tìm đến đúng `listId`, nhét Card mới vào mảng `cards`, và trả về State mới.
-5. **Re-render:** Context nhận thấy State mới thay đổi. React tự động cập nhật lại UI của component `List` tương ứng. Người dùng nhìn thấy thẻ xuất hiện ngay lập tức.
+2. **Hook Execution:** Component lấy action `addCard` từ store thông qua selector `useBoardStore(state => state.addCard)`.
+3. **State Mutation (Immer):** Hàm `addCard` chạy, Immer cho phép sửa trực tiếp mảng `list.cards.push(newCard)` nhưng tự động tạo ra một bản sao immutable ở phía dưới.
+4. **Zustand Store cập nhật:** State mới được lưu vào bộ nhớ trung tâm.
+5. **Re-render:** Chỉ các component nào subscribe đúng vào phần state bị thay đổi (nhờ selector) mới tiến hành re-render lại Virtual DOM.
 
 ---
 
@@ -95,20 +86,21 @@ Hãy tưởng tượng luồng đi của dữ liệu như một dòng sông mộ
 
 Vì chúng ta không có Backend Server, mọi thay đổi phải được lưu lại trình duyệt để F5 không bị mất dữ liệu.
 
-**Cách triển khai chuẩn (Team cần lưu ý khi code):**
-Tuyệt đối KHÔNG gọi `localStorage.setItem` rải rác khắp nơi trong UI hay Hooks. Hãy đặt nó ở một nơi duy nhất: **Bên trong `BoardProvider`**.
-
-Sử dụng `useEffect` để lắng nghe sự thay đổi của State:
+**Cách triển khai chuẩn:**
+Nhóm không tự viết `useEffect` để bắt sự kiện vì kém hiệu quả. Thay vào đó, chúng ta cấu hình **Persist Middleware** của Zustand khi khởi tạo store.
 
 ```tsx
-// Bên trong BoardProvider.tsx
-const [state, dispatch] = useReducer(boardReducer, initialState);
-
-// Bất cứ khi nào 'state.boards' thay đổi (thêm thẻ, xóa cột, kéo thả...)
-// Effect này sẽ tự động chạy và ghi đè xuống Local Storage
-useEffect(() => {
-    localStorage.setItem('trello_boards', JSON.stringify(state.boards));
-}, [state.boards]);
+// Bên trong store/useBoardStore.ts
+export const useBoardStore = create<StoreState>()(
+  persist(
+    immer((...a) => ({
+      ...createBoardSlice(...a),
+      ...createListSlice(...a),
+      ...createCardSlice(...a),
+    })),
+    { name: "trello-storage" }, // Tự động lưu và load từ LocalStorage với key này!
+  ),
+);
 ```
 
-Nhờ cơ chế này, quá trình lưu trữ trở nên "vô hình" (transparent) đối với UI. Dev team chỉ cần tập trung vào việc Dispatch Action thay đổi State, chuyện lưu trữ đã có Provider lo!
+Nhờ cơ chế này, quá trình lưu trữ trở nên "vô hình" (transparent) đối với UI. Mọi thao tác đều tự động đồng bộ siêu tốc và an toàn.

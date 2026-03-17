@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { ICard } from "../../../types";
+import type { ICard } from "../types";
 
 interface CardModalProps {
   card: ICard;

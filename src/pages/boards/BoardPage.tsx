@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
-import List from "./components/List";
-import AddListForm from "./components/AddListForm";
-import { useBoardStore } from "../../store/useBoardStore";
+import List from "../../features/kanban/components/List";
+import AddListForm from "../../features/kanban/components/AddListForm";
+import { useBoardStore } from "../../features/kanban/store/useBoardStore";
 
 const BoardDetail = () => {
   const { boardId } = useParams();

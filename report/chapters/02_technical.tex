@@ -20,16 +20,15 @@ npm run dev
 \end{verbatim}
 Dự án sử dụng \textbf{TypeScript} (\texttt{react-ts}) thay vì JavaScript thuần. TypeScript cung cấp hệ thống kiểm tra kiểu tĩnh (Static Typing), giúp định nghĩa rõ ràng cấu trúc dữ liệu của các \texttt{Board}, \texttt{List}, \texttt{Card}, qua đó hạn chế tối đa các lỗi "undefined" (lỗi truy cập thuộc tính không tồn tại) trong quá trình xử lý logic kéo thả.
 
-\section{Kiến trúc thư mục (Folder Structure)}
-Một dự án tốt cần một cấu trúc thư mục rõ ràng để dễ dàng bảo trì và mở rộng. Thay vì nhóm các file theo loại (Types-based) như cách làm cũ, dự án áp dụng \textbf{Kiến trúc hướng Tính năng (Feature-based Architecture)}:
+\section{Kiến trúc thư mục (Folder Structure) với Feature-Sliced Design}
+Một dự án tốt cần một cấu trúc thư mục rõ ràng để dễ dàng bảo trì và mở rộng. Dự án đã áp dụng \textbf{Feature-Sliced Design (FSD)} - một kiến trúc nâng cao và tối ưu nhất hiện nay cho các dự án React phức tạp. FSD giúp chia nhỏ các phần (slices) theo lĩnh vực nghiệp vụ (domain logic) và đóng gói mọi thứ có liên quan vào cùng một nơi:
 \begin{itemize}
-    \item \texttt{src/components}: Chứa các thành phần UI dùng chung, độc lập với ngữ cảnh nghiệp vụ (như Button, Header, Sidebar).
-    \item \texttt{src/features}: Là trái tim của ứng dụng. Chứa logic và giao diện cốt lõi được chia theo từng miền tính năng riêng biệt. Cụ thể gồm miền \texttt{auth} (đăng nhập) và \texttt{boards} (quản lý bảng, danh sách, thẻ, kéo thả). Mọi logic nội bộ của tính năng nào sẽ nằm gọn trong thư mục của tính năng đó.
-    \item \texttt{src/layouts}: Quản lý các bố cục chung của ứng dụng, ví dụ \texttt{MainLayout} quy định vị trí của Sidebar bên trái và nội dung động (Outlet) nằm bên phải.
-    \item \texttt{src/routes}: Chứa cấu hình React Router v6 (dạng Data Mode), phân luồng điều hướng và định nghĩa các hàm \texttt{Loader} lấy dữ liệu trước khi render trang.
-    \item \texttt{src/types}: Tập trung định nghĩa các TypeScript Interfaces (\texttt{IBoard}, \texttt{IList}, \texttt{ICard}) dùng chung cho toàn dự án.
-    \item \texttt{src/hooks}: Chứa các Custom Hooks toàn cục dùng để tương tác với Local Storage hoặc Global Context.
+    \item \texttt{src/app}: Tầng ứng dụng (App Layer) dùng để khởi tạo, chứa các thành phần cấu hình tổng như \texttt{App.tsx}, cấu hình điều hướng \texttt{router.tsx} và \texttt{loaders.ts}.
+    \item \texttt{src/components}: Tầng các UI Component (Shared UI Layer) "ngu ngốc" (dumb components). Chúng chỉ nhận Props và hiển thị, độc lập với logic nghiệp vụ (ví dụ: \texttt{components/layout} chứa \texttt{Header.tsx}, \texttt{Sidebar.tsx}).
+    \item \texttt{src/features}: Tầng tính năng (Features Layer) - trái tim của dự án. Code được chia theo từng mảnh nghiệp vụ (vd: \texttt{auth}, \texttt{kanban}). Mọi thành phần phục vụ tính năng Kanban (từ Component như \texttt{TaskCard}, đến Store Zustand nội bộ \texttt{store/slices}, và \texttt{types}) đều được đặt chung trong thư mục \texttt{features/kanban}.
+    \item \texttt{src/pages}: Tầng giao diện trang (Pages Layer). Đóng vai trò làm nhạc trưởng, gọi và lắp ráp các mảnh ghép từ \texttt{features} và \texttt{components} lại với nhau thành một màn hình hoàn chỉnh, ví dụ \texttt{DashboardPage.tsx} hay \texttt{BoardPage.tsx}.
 \end{itemize}
+Sự tách bạch rõ ràng giữa \textit{Pages} và \textit{Features} giúp việc điều hướng mã nguồn trở nên trực quan, đồng thời đảm bảo an toàn khi cần mở rộng thêm các tính năng mới trong tương lai.
 
 \chapter{Các khái niệm nền tảng (Fundamentals)}
 

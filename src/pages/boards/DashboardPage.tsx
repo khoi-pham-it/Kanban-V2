@@ -1,5 +1,5 @@
-import BoardCard from "./components/BoardCard";
-import { useBoardStore } from "../../store/useBoardStore";
+import BoardCard from "../../features/kanban/components/BoardCard";
+import { useBoardStore } from "../../features/kanban/store/useBoardStore";
 
 const Dashboard = () => {
   // Lấy dữ liệu từ store bằng selectors để tối ưu re-render
