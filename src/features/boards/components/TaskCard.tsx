@@ -1,14 +1,25 @@
 import { useState } from "react";
-import type { ICard } from "../../../types";
+import type { ICard, Id } from "../../../types";
 import CardModal from "./CardModal";
+import { useBoardStore } from "../../../store/useBoardStore";
 
 interface TaskCardProps {
   card: ICard;
   listTitle?: string;
+  listId: Id;
+  boardId: Id;
 }
 
-const TaskCard = ({ card, listTitle }: TaskCardProps) => {
+const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const deleteCard = useBoardStore((state) => state.deleteCard);
+
+  const handleDeleteCard = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Bạn có chắc chắn muốn xóa thẻ này không?")) {
+      deleteCard(boardId, listId, card.id);
+    }
+  };
 
   return (
     <>
@@ -19,11 +30,7 @@ const TaskCard = ({ card, listTitle }: TaskCardProps) => {
         <div className="flex items-start justify-between gap-2">
           <h4 className="text-sm font-semibold leading-snug">{card.title}</h4>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // TODO: Tích hợp logic xóa thẻ
-              console.log("Delete card", card.id);
-            }}
+            onClick={handleDeleteCard}
             className="opacity-0 group-hover/card:opacity-100 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-red-500 rounded transition-all shrink-0"
             title="Xóa thẻ"
           >

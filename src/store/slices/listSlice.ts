@@ -1,6 +1,6 @@
-import { StateCreator } from "zustand";
-import { StoreState, ListSlice } from "../types";
-import { IList } from "../../types";
+import type { StateCreator } from "zustand";
+import type { StoreState, ListSlice } from "../types";
+import type { IList } from "../../types";
 
 export const createListSlice: StateCreator<
   StoreState,

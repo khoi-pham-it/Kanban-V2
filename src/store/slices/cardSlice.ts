@@ -1,6 +1,6 @@
-import { StateCreator } from "zustand";
-import { StoreState, CardSlice } from "../types";
-import { ICard } from "../../types";
+import type { StateCreator } from "zustand";
+import type { StoreState, CardSlice } from "../types";
+import type { ICard } from "../../types";
 
 export const createCardSlice: StateCreator<
   StoreState,

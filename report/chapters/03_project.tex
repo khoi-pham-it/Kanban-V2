@@ -18,28 +18,27 @@ Giải quyết vấn đề quản lý công việc và theo dõi tiến độ tr
 \begin{verbatim}
 App
  +- RouterProvider
-    +- AuthProvider
-       +- BoardProvider
-          +- MainLayout
-             +- Pages (Login, Dashboard, BoardDetail)
-                +- Features/Boards/Components
-                   +- BoardCard
-                   +- List
-                      +- TaskCard
-                      +- AddCardForm
-                   +- AddListForm
-                   +- CardModal
+    +- MainLayout
+       +- Pages (Login, Dashboard, BoardDetail)
+          +- Features/Boards/Components
+             +- BoardCard
+             +- List
+                +- TaskCard
+                +- AddCardForm
+             +- AddListForm
+             +- CardModal
 \end{verbatim}
 
 \chapter{Triển khai và Demo sản phẩm}
 
 \section{Tích hợp hệ thống và Luồng dữ liệu (State Flow)}
-Khi người dùng thêm một Card mới:
+Khi người dùng thêm một Card mới với Zustand:
 \begin{enumerate}
-    \item Nhập tiêu đề vào \texttt{AddCardForm}.
-    \item Dispatch hành động \texttt{ADD\_CARD} thông qua \texttt{useCards}.
-    \item \texttt{boardReducer} cập nhật trạng thái trong Context.
-    \item React tự động re-render các \texttt{List} bị thay đổi dữ liệu.
+    \item Nhập tiêu đề vào Component UI \texttt{AddCardForm}.
+    \item Lấy action từ Store bằng hooks: \texttt{const \{ addCard \} = useBoardStore()}.
+    \item Gọi \texttt{addCard(boardId, listId, title)}.
+    \item \texttt{Zustand} kết hợp \texttt{Immer} thực hiện thay đổi mảng State một cách bất biến.
+    \item React tự động đối chiếu Virtual DOM và re-render chính xác \texttt{List} chứa Card vừa thêm.
 \end{enumerate}
 
 \section{Tính năng nâng cao}
