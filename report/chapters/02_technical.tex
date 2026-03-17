@@ -24,6 +24,7 @@ Sự khác biệt cốt lõi nhất ở đây là hậu tố \texttt{react-ts}. 
     \item Định nghĩa rõ ràng các Interface và Type cho toàn bộ ứng dụng (Ví dụ: Interface \texttt{IBoard} bắt buộc phải có \texttt{id}, \texttt{title} và một mảng \texttt{lists}). Điều này hạn chế tối đa lỗi nổi tiếng "Cannot read properties of undefined" thường xuyên xảy ra trong ứng dụng Kanban khi xử lý logic mảng lồng nhau.
     \item Giúp tính năng tự động gợi ý (IntelliSense) của VSCode hoạt động hoàn hảo, hỗ trợ lập trình viên thao tác với dữ liệu mà không cần phải nhớ thuộc tính của object.
 \end{itemize}
+Sự tách bạch rõ ràng giữa \textit{Pages} và \textit{Features} giúp việc điều hướng mã nguồn trở nên trực quan, đồng thời đảm bảo an toàn khi cần mở rộng thêm các tính năng mới trong tương lai.
 
 \section{Kiến trúc mã nguồn theo chuẩn Feature-Sliced Design (FSD)}
 Một trong những thách thức lớn nhất của các ứng dụng Frontend là việc mã nguồn trở thành "đống rác" (Spaghetti Code) khi quy mô dự án mở rộng. Để giải quyết triệt để vấn đề này, thay vì gom nhóm file theo loại tĩnh (ví dụ: một thư mục \texttt{components} khổng lồ, một thư mục \texttt{types} khổng lồ chứa mọi thứ), dự án đã mạnh dạn áp dụng \textbf{Feature-Sliced Design (FSD)} - một phương pháp luận kiến trúc nâng cao và được giới chuyên gia đánh giá là tối ưu nhất hiện nay.
