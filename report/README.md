@@ -175,20 +175,51 @@ if (!isAuthenticated) redirect("/login")
 
 ---
 
-# 5. System Architecture (đưa vào báo cáo)
+# 5. Cấu trúc Thư mục (Feature-Sliced Design)
+
+Dự án áp dụng mô hình Feature-Sliced Design giúp dự án cực kỳ dễ mở rộng.
+
+```
+src/
+├── app/               # Tầng khởi tạo ứng dụng (Router, Global styles)
+│   ├── App.tsx
+│   └── router.tsx
+│
+├── components/        # Tầng UI dùng chung toàn ứng dụng (Dumb components)
+│   ├── layout/        # Layouts như Header, Sidebar, MainLayout
+│   └── ui/            # UI Components (Buttons, Modals...)
+│
+├── features/          # Tầng tính năng cốt lõi (Domain logic)
+│   ├── auth/          # Tính năng đăng nhập
+│   └── kanban/        # Tính năng Kanban chính
+│       ├── components/  # List, TaskCard, BoardCard, AddCardForm...
+│       ├── store/       # Zustand slices chuyên biệt (boardSlice, listSlice...)
+│       └── types/       # Interfaces cho IBoard, IList, ICard
+│
+└── pages/             # Tầng Route hiển thị màn hình (gọi các features lại với nhau)
+    ├── auth/
+    │   └── LoginPage.tsx
+    └── boards/
+        ├── DashboardPage.tsx
+        └── BoardPage.tsx
+```
+
+---
+
+# 6. System Architecture (đưa vào báo cáo)
 
 ```
                   React Router
                        │
           ┌────────────┴────────────┐
           │                         │
-      Auth Context             Board Context
-      (user state)             (boards state)
+     Zustand Store             Zustand Store
+     (auth state)              (board state)
           │                         │
           └────────────┬────────────┘
                        │
                   Custom Hooks
-           (useAuth, useBoards, useCards)
+           (useAuth, useBoardStore)
                        │
                        │
                 Application Pages
@@ -206,39 +237,12 @@ if (!isAuthenticated) redirect("/login")
 
 ---
 
-# 6. Component Tree (rất tốt để đưa vào báo cáo)
-
-```
-App
- ├ Router
- │
- ├ AuthProvider
- │
- ├ BoardProvider
- │
- ├ Layout
- │
- ├ Pages
- │   ├ LoginPage
- │   ├ DashboardPage
- │   └ BoardPage
- │
- └ Components
-     ├ Board
-     ├ List
-     ├ Card
-     ├ AddCardForm
-     ├ AddListForm
-```
-
----
-
 # 7. Global State Design
 
 State được quản lý bằng:
 
 ```
-Context API + useReducer
+Zustand + Immer + Persist Middleware
 ```
 
 ---
@@ -289,18 +293,17 @@ Ví dụ board:
 
 ---
 
-# 8. Reducer Actions
+# 8. Zustand Actions (Slices)
 
-Ví dụ reducer cho board.
+Ví dụ action trong Zustand cho board (sử dụng Immer để cập nhật immutable):
 
 ```
-CREATE_BOARD
-DELETE_BOARD
-ADD_LIST
-DELETE_LIST
-ADD_CARD
-MOVE_CARD
-DELETE_CARD
+addBoard
+deleteBoard
+addList
+deleteList
+addCard
+deleteCard
 ```
 
 ---
@@ -316,13 +319,13 @@ User nhập card title
 AddCardForm
         │
         ▼
-dispatch(ADD_CARD)
+useBoardStore.getState().addCard()
         │
         ▼
-boardReducer
+Zustand Store cập nhật (thông qua Immer)
         │
         ▼
-state cập nhật
+state mới
         │
         ▼
 React re-render List
@@ -339,10 +342,10 @@ User kéo card
 Drag event
       │
       ▼
-dispatch(MOVE_CARD)
+useBoardStore.getState().moveCard() (Tương lai)
       │
       ▼
-Reducer cập nhật list
+Zustand Store cập nhật list
       │
       ▼
 Board re-render
@@ -350,7 +353,7 @@ Board re-render
 
 ---
 
-# 10. Custom Hooks (bắt buộc)
+# 10. Custom Hooks & Store
 
 ## useAuth
 
@@ -366,29 +369,18 @@ checkAuth()
 
 ---
 
-## useBoards
+## useBoardStore
 
-Quản lý board.
+Quản lý toàn bộ state liên quan tới boards, lists và cards, tách biệt bằng Slice Pattern.
 
-Functions:
+Functions (Actions):
 
 ```
-createBoard()
+addBoard()
 deleteBoard()
-getBoards()
-```
-
----
-
-## useCards
-
-Quản lý card.
-
-Functions:
-
-```
+addList()
+deleteList()
 addCard()
-moveCard()
 deleteCard()
 ```
 
