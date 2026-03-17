@@ -1,4 +1,4 @@
-import { IBoard, Id } from "../types";
+import type { IBoard, Id } from "../types";
 
 export interface BoardSlice {
   boards: IBoard[];

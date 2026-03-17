@@ -1,14 +1,24 @@
-import { useLoaderData } from "react-router-dom";
-import type { IBoard } from "../../types";
+import { useParams } from "react-router-dom";
 import List from "./components/List";
 import AddListForm from "./components/AddListForm";
+import { useBoardStore } from "../../store/useBoardStore";
 
 const BoardDetail = () => {
-  const board = useLoaderData() as IBoard | null;
+  const { boardId } = useParams();
+
+  // Lấy dữ liệu từ store bằng selectors để tối ưu re-render
+  const board = useBoardStore((state) => state.boards.find(b => b.id === boardId));
+  const addList = useBoardStore((state) => state.addList);
 
   if (!board) {
     return <div className="p-8">Không tìm thấy bảng</div>;
   }
+
+  const handleAddList = (title: string) => {
+    if (boardId) {
+      addList(boardId, title);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
@@ -34,10 +44,10 @@ const BoardDetail = () => {
       <main className="flex-1 overflow-x-auto p-6 hide-scrollbar">
         <div className="flex gap-6 h-full items-start">
           {board.lists.map((list) => (
-            <List key={list.id} list={list} />
+            <List key={list.id} list={list} boardId={board.id} />
           ))}
 
-          <AddListForm boardId={board.id} />
+          <AddListForm boardId={board.id} onAddList={handleAddList} />
         </div>
       </main>
     </div>

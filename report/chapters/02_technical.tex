@@ -37,16 +37,15 @@ Một dự án tốt cần một cấu trúc thư mục rõ ràng để dễ dà
 React Hooks là tính năng cốt lõi được ra mắt từ phiên bản React 16.8, cho phép sử dụng State và các tính năng của React mà không cần phải viết Class. Dự án tận dụng triệt để các Hooks cơ bản:
 \begin{itemize}
     \item \textbf{useState:} Quản lý trạng thái cục bộ của các Component đơn giản (ví dụ: trạng thái mở/đóng của Form nhập liệu, nội dung đang gõ trong ô Input).
-    \item \textbf{useEffect:} Quản lý các Side-effects (hiệu ứng phụ), chẳng hạn như việc đồng bộ hóa dữ liệu từ State xuống Local Storage mỗi khi State thay đổi, hoặc thao tác gán sự kiện bàn phím (nhấn Esc để đóng Modal).
-    \item \textbf{useContext:} Cung cấp phương thức để truyền dữ liệu (Data) từ Component cha xuống các Component con ở tầng rất sâu mà không cần phải truyền liên tiếp qua trung gian (tránh hiện tượng Prop Drilling).
-    \item \textbf{useReducer:} Phù hợp để quản lý các State phức tạp. Khi State là một mảng lồng mảng (Mảng Board chứa List, Mảng List chứa Card), việc dùng \texttt{useState} rất dễ gây nhầm lẫn. \texttt{useReducer} giải quyết bằng cách nhận vào một "hành động" (Action) và tự tính toán ra State mới.
+    \item \textbf{useEffect:} Quản lý các Side-effects (hiệu ứng phụ), chẳng hạn như thao tác gán sự kiện bàn phím (nhấn Esc để đóng Modal) hoặc gọi API, lấy dữ liệu.
+    \item \textbf{Custom Hooks với Zustand:} Thay vì sử dụng \texttt{useContext} và \texttt{useReducer} phức tạp và dễ gặp vấn đề re-render dư thừa (thường thấy khi Context thay đổi thì mọi component dùng nó đều re-render), dự án quyết định áp dụng thư viện \textbf{Zustand}.
 \end{itemize}
 
-\section{Custom Hooks - Tách biệt Logic và Giao diện}
-Để mã nguồn giao diện (UI) trở nên trong sáng, nhóm đã áp dụng pattern thiết kế bằng cách xây dựng các \textbf{Custom Hooks}.
+\section{Kiến trúc Custom Store với Zustand - Tách biệt Logic và Giao diện}
+Để mã nguồn giao diện (UI) trở nên trong sáng, nhóm đã áp dụng pattern thiết kế Slice Pattern bằng cách xây dựng Custom Hook \texttt{useBoardStore} thông qua thư viện \textbf{Zustand}.
 \begin{itemize}
-    \item \texttt{useAuth()}: Cung cấp các hàm \texttt{login}, \texttt{logout} và trạng thái \texttt{isAuthenticated}.
-    \item \textbf{\texttt{useBoards()} và \texttt{useCards()}}: Cung cấp các hàm như \texttt{addCard(listId, title)}, \texttt{deleteList(id)}. Thay vì lập trình viên UI phải tự thao tác với mảng dữ liệu, họ chỉ việc gọi các hàm trừu tượng này. Điều này tuân thủ nguyên tắc \textit{Separation of Concerns} (Tách biệt mối quan tâm).
+    \item Thay vì lập trình viên UI phải tự thao tác với mảng dữ liệu phức tạp nhiều tầng, họ chỉ việc gọi các hành động (Actions) được định nghĩa sẵn trong Zustand Store như \texttt{addCard(boardId, listId, title)}, \texttt{deleteList(boardId, listId)}.
+    \item Điều này tuân thủ triệt để nguyên tắc \textit{Separation of Concerns} (Tách biệt mối quan tâm), giúp các Component UI chỉ đảm nhận đúng một việc: Nhận dữ liệu và vẽ giao diện (Render).
 \end{itemize}
 
 \section{Routing nâng cao với React Router v6.4+}
@@ -58,17 +57,18 @@ Dự án sử dụng cơ chế \textbf{Data Router} mới nhất của React Rou
 
 \chapter{Quản lý Trạng thái và Tối ưu hóa}
 
-\section{Kiến trúc Global State Design}
-Sự kết hợp giữa \textbf{Context API} và \textbf{useReducer} tạo thành một hệ thống quản lý trạng thái tập trung mạnh mẽ (tương đương Redux nhưng nhẹ hơn). Cấu trúc State bao gồm hai vùng chính:
+\section{Kiến trúc Global State Design với Zustand}
+Dự án quyết định từ bỏ \textbf{Context API} và \textbf{useReducer} truyền thống để chuyển sang \textbf{Zustand} - một thư viện quản lý trạng thái hiện đại, nhẹ, nhanh và được yêu thích nhất hiện nay. Cấu trúc State bao gồm các vùng chính:
 \begin{itemize}
-    \item \textbf{Auth State:} Quản lý thông tin phiên làm việc, phân quyền người dùng và bảo vệ các trang yêu cầu đăng nhập (Protected Routes).
-    \item \textbf{Board State:} Lưu trữ cây dữ liệu Kanban. Mọi hành động thao tác (như sửa tên, xóa thẻ, kéo thẻ sang cột
- khác) đều được gọi thông qua hàm \texttt{dispatch(action)}. Reducer sẽ tiếp nhận và trả về cây State mới, kích hoạt quá trình Virtual DOM tính toán và cập nhật giao diện tự động.
+    \item \textbf{Slice Pattern:} Hệ thống State (State Tree) Kanban vô cùng phức tạp (Mảng Bảng chứa Mảng Cột, Mảng Cột chứa Mảng Thẻ). Nhóm đã chia nhỏ Store thành các mảnh (Slices) độc lập: \texttt{BoardSlice}, \texttt{ListSlice}, \texttt{CardSlice} để dễ bảo trì.
+    \item \textbf{Khắc phục điểm yếu React Context:} Với Zustand, Component chỉ re-render khi phần State nó cần (Selectors) thực sự bị thay đổi, xóa bỏ hoàn toàn hiện tượng re-render dây chuyền (Waterfall re-renders) của Context API.
+    \item \textbf{Kết hợp Immer:} Bất biến (Immutability) là nguyên tắc cốt lõi của React. Thay vì phải dùng \textit{spread operator} (\texttt{...state}) quá phức tạp, nhóm đã kết hợp middleware \textbf{Immer} để viết logic cập nhật dữ liệu tự nhiên như state có thể thay đổi (mutable data), giúp code cực kỳ trực quan và sạch sẽ.
 \end{itemize}
 
 \section{Tương tác Local Storage (Persistence)}
-Do đặc thù không sử dụng Backend, việc đảm bảo dữ liệu không bị mất khi tải lại trang (F5) là bắt buộc. Nhóm sử dụng kỹ thuật \textit{State Persistence}:
-Bên trong Component cung cấp Context (\texttt{BoardProvider}), một \texttt{useEffect} được thiết lập để theo dõi sự thay đổi của State trung tâm. Bất cứ khi nào State thay đổi (dù là thêm một thẻ nhỏ hay xóa cả một bảng), hiệu ứng này sẽ chuyển đổi State thành chuỗi JSON và ghi đè vào Local Storage của trình duyệt một cách trong suốt (transparent) với người dùng.
+Do đặc thù không sử dụng Backend, việc đảm bảo dữ liệu không bị mất khi tải lại trang (F5) là bắt buộc.
+Nhóm không viết \texttt{useEffect} để tự bắt sự kiện thủ công vì rất kém hiệu quả. Thay vào đó, nhóm áp dụng \textbf{Persist Middleware} tích hợp sẵn của Zustand.
+Chỉ với vài dòng cấu hình, mọi thay đổi trong \texttt{useBoardStore} (thêm thẻ, xóa cột) đều được tự động đồng bộ xuống Local Storage của trình duyệt một cách trong suốt (transparent) và cực kỳ an toàn.
 
 \section{Tối ưu hiệu năng (Performance Optimization) và Lazy Loading}
 \begin{itemize}

@@ -1,6 +1,6 @@
-import { StateCreator } from "zustand";
-import { StoreState, BoardSlice } from "../types";
-import { IBoard } from "../../types";
+import type { StateCreator } from "zustand";
+import type { StoreState, BoardSlice } from "../types";
+import type { IBoard } from "../../types";
 
 const initialBoards: IBoard[] = [
   {

@@ -1,12 +1,27 @@
-import type { IList } from "../../../types";
+import type { IList, Id } from "../../../types";
 import TaskCard from "./TaskCard";
 import AddCardForm from "./AddCardForm";
+import { useBoardStore } from "../../../store/useBoardStore";
 
 interface ListProps {
   list: IList;
+  boardId: Id;
 }
 
-const List = ({ list }: ListProps) => {
+const List = ({ list, boardId }: ListProps) => {
+  const deleteList = useBoardStore((state) => state.deleteList);
+  const addCard = useBoardStore((state) => state.addCard);
+
+  const handleDeleteList = () => {
+    if (confirm("Bạn có chắc chắn muốn xóa danh sách này không?")) {
+      deleteList(boardId, list.id);
+    }
+  };
+
+  const handleAddCard = (listId: string | number, title: string) => {
+    addCard(boardId, listId, title);
+  };
+
   return (
     <div className="kanban-column flex flex-col bg-slate-200/50 dark:bg-slate-800/50 rounded-xl p-3 shrink-0 w-72">
       <div className="flex items-center justify-between mb-4 px-1 group/list">
@@ -24,6 +39,7 @@ const List = ({ list }: ListProps) => {
             <span className="material-symbols-outlined text-sm">edit</span>
           </button>
           <button
+            onClick={handleDeleteList}
             className="p-1 hover:bg-slate-300 dark:hover:bg-slate-700 rounded text-slate-500 hover:text-red-500 transition-colors"
             title="Xóa danh sách"
           >
@@ -34,11 +50,11 @@ const List = ({ list }: ListProps) => {
 
       <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
         {list.cards.map((card) => (
-          <TaskCard key={card.id} card={card} listTitle={list.title} />
+          <TaskCard key={card.id} card={card} listTitle={list.title} listId={list.id} boardId={boardId} />
         ))}
       </div>
 
-      <AddCardForm listId={list.id} />
+      <AddCardForm listId={list.id} onAddCard={handleAddCard} />
     </div>
   );
 };
