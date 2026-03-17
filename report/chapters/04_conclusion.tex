@@ -2,8 +2,37 @@
 
 \chapter{Đánh giá và Nhìn lại}
 \section{So sánh với mục tiêu ban đầu}
-\section{Phân tích lỗi (Bug Reports)}
+Nhìn lại toàn bộ hành trình xây dựng đồ án Trello Mini, nhóm tự hào khẳng định đã hoàn thành 100\% các mục tiêu cốt lõi đặt ra từ ban đầu. Quá trình phát triển không chỉ dừng lại ở việc gõ code, mà là quá trình nghiên cứu, thử nghiệm và đôi khi là đập đi xây lại để tìm ra giải pháp tối ưu nhất.
 
-\chapter{Hướng phát triển}
-\section{Cải tiến sản phẩm}
-\section{Định hướng bản thân}
+Những thành quả lớn nhất đạt được bao gồm:
+\begin{itemize}
+    \item \textbf{Làm chủ React và Hệ sinh thái:} Không chỉ dừng lại ở việc dùng các thẻ HTML tĩnh, nhóm đã thực sự làm chủ cách React suy nghĩ (Thinking in React) thông qua vòng đời re-render, State, Props và Hooks.
+    \item \textbf{Cập nhật công nghệ mới nhất:} Việc loại bỏ Redux và Context API cũ kỹ để áp dụng \textbf{Zustand} + \textbf{Immer} chứng minh nhóm có khả năng cập nhật các xu hướng công nghệ mới nhất trên thế giới. Sự chuyển đổi sang kiến trúc \textbf{Feature-Sliced Design (FSD)} là một điểm sáng lớn, minh chứng cho tư duy cấu trúc phần mềm cấp độ doanh nghiệp (Enterprise-level).
+    \item \textbf{Giải quyết bài toán thực tế:} Tính năng Kéo Thả (Drag and Drop) với \texttt{dnd-kit} và xử lý logic mảng lồng nhau nhiều tầng là những bài toán khó, yêu cầu tư duy thuật toán và hiểu biết sâu về cấu trúc dữ liệu. Nhóm đã vượt qua và tạo ra một trải nghiệm mượt mà, không giật lag.
+\end{itemize}
+
+\section{Những khó khăn gặp phải (Challenges \& Bugs)}
+Trong quá trình phát triển, nhóm cũng đối mặt với không ít thách thức kỹ thuật:
+\begin{itemize}
+    \item \textbf{Khủng hoảng Re-render:} Ở những Sprint đầu tiên, mỗi khi gõ chữ vào Form tạo Card, toàn bộ Bảng Kanban bị chớp liên tục. Qua nghiên cứu, nhóm phát hiện do cấu trúc Context API ép mọi component tiêu thụ phải render lại. Đây chính là động lực lớn nhất để nhóm đập bỏ Context và chuyển sang dùng \textbf{Zustand Selectors}, giải quyết dứt điểm tình trạng giật lag.
+    \item \textbf{Xung đột TypeScript (Type Conflicts):} Khi làm việc với thư viện \texttt{dnd-kit}, các sự kiện kéo thả trả về rất nhiều kiểu dữ liệu phức tạp. Việc ép kiểu (Type Casting) sai dẫn đến việc code chạy được nhưng TypeScript báo lỗi đỏ liên tục. Nhóm đã phải đọc kỹ tài liệu gốc (Documentation) và tự định nghĩa lại các Interface chặt chẽ hơn.
+    \item \textbf{Mất đồng bộ Local Storage:} Ban đầu, việc ghi dữ liệu xuống Local Storage được thực hiện thủ công qua \texttt{useEffect}. Đôi khi thao tác kéo thả diễn ra quá nhanh khiến trình duyệt không kịp lưu, dẫn đến việc F5 bị mất dữ liệu. Nhóm đã khắc phục bằng cách tích hợp trực tiếp \textbf{Persist Middleware} vào tận lõi của Zustand Store.
+\end{itemize}
+
+\chapter{Hướng phát triển và Định hướng tương lai}
+\section{Đề xuất cải tiến sản phẩm (Future Features)}
+Dù Trello Mini đã hoạt động ổn định và đáp ứng tốt các yêu cầu cơ bản của môn học, nhưng để trở thành một sản phẩm có thể thương mại hóa (Production-ready) hoặc phục vụ người dùng thực tế, hệ thống cần được mở rộng thêm các tính năng:
+\begin{itemize}
+    \item \textbf{Kết nối Backend và Cơ sở dữ liệu:} Xóa bỏ Local Storage. Xây dựng một RESTful API bằng NodeJS/Express hoặc sử dụng nền tảng BaaS (Backend-as-a-Service) như \textbf{Supabase/Firebase} để lưu trữ dữ liệu tập trung trên Cloud.
+    \item \textbf{Cộng tác thời gian thực (Real-time Collaboration):} Tích hợp \textbf{Socket.IO} hoặc \textbf{WebSockets}. Khi User A kéo một cái thẻ, màn hình của User B cũng phải tự động di chuyển thẻ đó ngay lập tức mà không cần tải lại trang.
+    \item \textbf{Tính năng mở rộng cho Card:} Cho phép người dùng đính kèm file (Attachments), để lại bình luận (Comments), giao việc cho thành viên cụ thể (Assignees) và thiết lập ngày hết hạn với cảnh báo màu sắc (Due dates).
+    \item \textbf{Chế độ Tối (Dark Mode):} Mặc dù đã cấu hình sẵn Tailwind CSS hỗ trợ \texttt{dark:class}, hệ thống cần bổ sung thêm một nút Toggle Theme và lưu trạng thái này vào Global Store.
+\end{itemize}
+
+\section{Định hướng phát triển bản thân}
+Thông qua đồ án này, các thành viên trong nhóm đã định hình rõ hơn lộ trình nghề nghiệp của mình trong lĩnh vực Web Frontend:
+\begin{itemize}
+    \item Tiếp tục đào sâu vào \textbf{TypeScript} nâng cao (Advanced Types, Generics).
+    \item Chuyển tiếp học \textbf{Next.js} để giải quyết bài toán SEO và Server-Side Rendering (SSR) mà React thuần (Client-Side Rendering) còn yếu kém.
+    \item Nghiên cứu các quy chuẩn viết test cho giao diện như \textbf{Jest} và \textbf{React Testing Library} để đảm bảo chất lượng phần mềm trong môi trường CI/CD chuyên nghiệp.
+\end{itemize}

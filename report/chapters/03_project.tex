@@ -2,19 +2,25 @@
 
 \chapter{Phân tích và Thiết kế hệ thống}
 
-\section{Mô tả bài toán}
-Giải quyết vấn đề quản lý công việc và theo dõi tiến độ trong các nhóm làm việc (Todo $\rightarrow$ Doing $\rightarrow$ Done). Hệ thống cho phép người dùng trực quan hóa quy trình làm việc thông qua bảng Kanban.
+\section{Mô tả bài toán và Tầm quan trọng}
+Trong kỷ nguyên số, làm việc nhóm (Teamwork) và quản lý tiến độ dự án (Project Management) là những yếu tố quyết định sự thành bại của một tổ chức. Hệ thống quản lý công việc dạng danh sách truyền thống thường dẫn đến sự quá tải thông tin và khó hình dung tổng quan.
 
-\section{Chức năng chính}
+Mô hình Kanban - bắt nguồn từ hệ thống sản xuất tinh gọn của Toyota, cung cấp một giải pháp trực quan hóa quy trình làm việc hoàn hảo. Trạng thái của từng công việc (Task) được thể hiện bằng vị trí của nó trên một Bảng (Board). Ví dụ phổ biến nhất là luồng làm việc 3 bước: \textbf{Todo (Cần làm) $\rightarrow$ Doing (Đang làm) $\rightarrow$ Done (Hoàn thành)}.
+
+Bài toán đặt ra cho hệ thống Trello Mini là phải số hóa được trải nghiệm Kanban vật lý này, sao cho người dùng có cảm giác như đang cầm một tờ giấy note (Card) và dán nó sang một cột (List) khác trên tấm bảng trắng (Board). Mọi thao tác phải diễn ra mượt mà, tức thời, không có độ trễ tải trang.
+
+\section{Xác định yêu cầu tính năng (Use Cases)}
+Hệ thống được thiết kế với các nhóm chức năng cốt lõi sau:
 \begin{itemize}
-    \item \textbf{Authentication:} Đăng nhập/Đăng xuất đơn giản với Protected Routes (Chỉ những người đã đăng nhập mới xem được Board).
-    \item \textbf{Board Dashboard:} Trang danh sách các dự án (Board).
-    \item \textbf{Kanban Board:} Gồm nhiều danh sách (List).
-    \item \textbf{Card Management:} Thêm, sửa, xóa các thẻ công việc (Card) trong List.
-    \item \textbf{Drag and Drop:} Kéo thả card giữa các list để thay đổi trạng thái công việc.
+    \item \textbf{Nhóm quản lý Phiên làm việc (Authentication):} Cung cấp tính năng Đăng nhập/Đăng xuất đơn giản. Thiết lập cơ chế \textit{Protected Routes} để đảm bảo tính riêng tư: Chỉ những người dùng đã xác thực (Authenticated) mới được phép truy cập vào khu vực Dashboard và Board Detail. Nếu cố tình truy cập, hệ thống tự động điều hướng (redirect) về trang đăng nhập.
+    \item \textbf{Nhóm quản lý Bảng dự án (Board Dashboard):} Đóng vai trò là "Trang chủ" của không gian làm việc. Người dùng có thể xem danh sách tất cả các Dự án dưới dạng thẻ lưới (Grid view), tạo mới một dự án hoặc xóa bỏ một dự án đã hoàn thành.
+    \item \textbf{Nhóm quản lý Cột trạng thái (List Management):} Trong một Bảng, người dùng có thể tạo ra vô số các Cột (Ví dụ: Backlog, In Progress, Reviewing, Done). Mỗi cột có thể được đổi tên hoặc xóa bỏ toàn bộ khi không còn nhu cầu.
+    \item \textbf{Nhóm quản lý Thẻ công việc (Card Management):} Đây là hạt nhân của hệ thống. Mỗi thẻ đại diện cho một đầu việc cụ thể. Người dùng có thể thêm thẻ mới vào cuối danh sách, mở thẻ để xem/chỉnh sửa chi tiết (Mô tả, Nhãn dán - Labels, Ngày hết hạn), và xóa thẻ.
+    \item \textbf{Nhóm tương tác Kéo Thả (Drag \& Drop):} Tính năng mang tính biểu tượng của Kanban. Người dùng có thể dùng chuột (hoặc ngón tay trên màn hình cảm ứng) nhấp giữ một Card và kéo nó thả sang một List khác để cập nhật trạng thái làm việc một cách trực quan nhất.
 \end{itemize}
 
-\section{Kiến trúc linh kiện (Component Tree)}
+\section{Kiến trúc Component (Component Tree)}
+Theo nguyên lý Feature-Sliced Design, cây Component của dự án được cấu trúc lồng nhau một cách có hệ thống, đi từ lớp tổng quát ngoài cùng (Router/Layout) vào sâu tới các thành phần hiển thị nhỏ nhất (Thẻ, Form):
 \begin{verbatim}
 App
  +- RouterProvider
@@ -31,26 +37,30 @@ App
 
 \chapter{Triển khai và Demo sản phẩm}
 
-\section{Tích hợp hệ thống và Luồng dữ liệu (State Flow)}
-Khi người dùng thêm một Card mới với Zustand:
+\section{Phân tích Luồng dữ liệu (State Flow) với Zustand}
+Để hiểu rõ sức mạnh của State Management trong React, hãy phân tích chi tiết vòng đời (vòng lặp dữ liệu) khi người dùng thực hiện một thao tác đơn giản: "Thêm một Card mới".
 \begin{enumerate}
-    \item Nhập tiêu đề vào Component UI \texttt{AddCardForm}.
-    \item Lấy action từ Store bằng hooks: \texttt{const \{ addCard \} = useBoardStore()}.
-    \item Gọi \texttt{addCard(boardId, listId, title)}.
-    \item \texttt{Zustand} kết hợp \texttt{Immer} thực hiện thay đổi mảng State một cách bất biến.
-    \item React tự động đối chiếu Virtual DOM và re-render chính xác \texttt{List} chứa Card vừa thêm.
+    \item \textbf{Tương tác người dùng (User Action):} Người dùng mở form ở cuối cột, nhập "Thiết kế logo" vào \texttt{<textarea>} bên trong component \texttt{AddCardForm} và nhấn nút "Thêm".
+    \item \textbf{Gọi Action (Dispatcher):} Thay vì xử lý logic phức tạp tại chỗ, component lấy hàm \texttt{addCard} từ \texttt{useBoardStore} và truyền các tham số cần thiết: \texttt{addCard(boardId, listId, "Thiết kế logo")}.
+    \item \textbf{Xử lý nghiệp vụ (Mutation với Immer):} Bên trong \texttt{Zustand Store}, hệ thống tìm đúng \texttt{Board} theo ID, rồi tìm tiếp đúng \texttt{List} theo ID. Dưới sự hỗ trợ của thư viện \texttt{Immer}, hàm \texttt{push} được gọi một cách tự nhiên để đẩy object Card mới vào mảng \texttt{list.cards}. Ngầm bên dưới, Immer tự động tạo ra một bản sao mới hoàn toàn (Immutable Object) cho toàn bộ cây State.
+    \item \textbf{Đồng bộ lưu trữ (Persist Middleware):} Ngay khi phát hiện State thay đổi, middleware \texttt{persist} tự động chuyển toàn bộ cây dữ liệu JSON và lưu đè xuống \texttt{localStorage} của trình duyệt, đảm bảo dữ liệu vĩnh viễn an toàn kể cả khi người dùng đóng máy tính.
+    \item \textbf{Đối chiếu và Hiển thị (Reconciliation \& Re-render):} Zustand thông báo cho React biết State đã thay đổi. React đối chiếu (diffing) Virtual DOM cũ và Virtual DOM mới. Nó phát hiện ra chỉ có duy nhất Component \texttt{List} (nơi chứa Card mới) là có thay đổi. React ra lệnh cập nhật đúng phần tử DOM đó lên màn hình. Giao diện xuất hiện một thẻ công việc mới cực kỳ mượt mà.
 \end{enumerate}
 
-\section{Tính năng nâng cao}
+\section{Chiến lược triển khai Kéo Thả (Drag and Drop)}
+Tính năng kéo thả là linh hồn của dự án nhưng cũng là bài toán kỹ thuật hóc búa nhất. Nhóm quyết định áp dụng thư viện \textbf{@dnd-kit/core} thay vì \textit{react-beautiful-dnd} cũ kỹ vì dnd-kit hỗ trợ kiến trúc mô-đun hóa, nhẹ và tương thích hoàn hảo với React Hooks.
+
+Xử lý luồng kéo thả bao gồm 3 trạng thái sự kiện:
 \begin{itemize}
-    \item \textbf{Local Storage Persistence:} Lưu trữ dữ liệu trực tiếp trong trình duyệt, thông tin không bị mất khi làm mới trang.
-    \item \textbf{Card Detail Modal:} Popup chi tiết công việc cho phép quản lý nhãn (Labels), ngày hết hạn (Due Date) và mô tả dài.
-    \item \textbf{Dynamic Form Inputs:} Sử dụng các form inline (\texttt{AddCardForm}, \texttt{AddListForm}) để tăng tính tương tác thay vì chuyển trang.
+    \item \textbf{onDragStart:} Nhận diện ID của thẻ đang được cầm lên (Active Card), tạo ra một bản sao mờ (overlay) di chuyển theo con trỏ chuột.
+    \item \textbf{onDragOver:} Phát hiện Thẻ đang di chuyển bay ngang qua Cột (List) nào. Tính toán logic chuyển Thẻ từ Cột cũ sang Cột mới tạm thời để người dùng xem trước (Preview) vị trí rơi.
+    \item \textbf{onDragEnd:} Khi người dùng nhả chuột, tính toán chính xác Vị trí chỉ số (Index) mới, gọi action \texttt{moveCard(activeId, overId, newIndex)} để chốt vị trí cập nhật vào Zustand Store.
 \end{itemize}
 
-\section{Hướng dẫn cài đặt (Deployment)}
+\section{Hướng dẫn Triển khai (Deployment Guide)}
+Để dễ dàng chia sẻ mã nguồn và để giảng viên nghiệm thu dự án, nhóm đã thiết lập cấu hình đóng gói (Build) cực kỳ tinh gọn:
 \begin{enumerate}
-    \item Giải nén mã nguồn.
-    \item Chạy \texttt{npm install} để cài đặt các thư viện cần thiết (\texttt{react-router-dom}, \texttt{dnd-kit}).
-    \item Chạy \texttt{npm run dev} để khởi động môi trường phát triển.
+    \item Yêu cầu hệ thống: Cài đặt NodeJS (v20+).
+    \item \textbf{Khởi chạy cục bộ (Development):} Mở terminal tại thư mục gốc, gõ \texttt{npm install} để kéo các thư viện từ server npmJS về máy. Sau đó gõ \texttt{npm run dev} để kích hoạt máy chủ phát triển tại địa chỉ \texttt{localhost:5173}.
+    \item \textbf{Đóng gói sản phẩm (Production Build):} Gõ \texttt{npm run build}. TypeScript sẽ rà soát lỗi tĩnh (\texttt{tsc -b}), sau đó Vite sẽ nén (minify) toàn bộ HTML, CSS, JS thành các file siêu nhỏ đặt trong thư mục \texttt{dist/}. Các file này đã sẵn sàng để được tải lên bất kỳ máy chủ Hosting tĩnh nào (như Vercel, Netlify, hay Github Pages) để đưa sản phẩm ra thế giới.
 \end{enumerate}
