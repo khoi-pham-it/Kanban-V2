@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { ICard, Id } from "../../../types";
+import type { ICard, Id } from "../types";
 import CardModal from "./CardModal";
-import { useBoardStore } from "../../../store/useBoardStore";
+import { useBoardStore } from "../store/useBoardStore";
 
 interface TaskCardProps {
   card: ICard;

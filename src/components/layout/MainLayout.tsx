@@ -1,6 +1,6 @@
 import { Outlet, useNavigation } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+import Sidebar from './Sidebar';
+import Header from './Header';
 
 const MainLayout = () => {
   const navigation = useNavigation();

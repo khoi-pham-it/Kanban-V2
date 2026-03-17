@@ -175,7 +175,38 @@ if (!isAuthenticated) redirect("/login")
 
 ---
 
-# 5. System Architecture (đưa vào báo cáo)
+# 5. Cấu trúc Thư mục (Feature-Sliced Design)
+
+Dự án áp dụng mô hình Feature-Sliced Design giúp dự án cực kỳ dễ mở rộng.
+
+```
+src/
+├── app/               # Tầng khởi tạo ứng dụng (Router, Global styles)
+│   ├── App.tsx
+│   └── router.tsx
+│
+├── components/        # Tầng UI dùng chung toàn ứng dụng (Dumb components)
+│   ├── layout/        # Layouts như Header, Sidebar, MainLayout
+│   └── ui/            # UI Components (Buttons, Modals...)
+│
+├── features/          # Tầng tính năng cốt lõi (Domain logic)
+│   ├── auth/          # Tính năng đăng nhập
+│   └── kanban/        # Tính năng Kanban chính
+│       ├── components/  # List, TaskCard, BoardCard, AddCardForm...
+│       ├── store/       # Zustand slices chuyên biệt (boardSlice, listSlice...)
+│       └── types/       # Interfaces cho IBoard, IList, ICard
+│
+└── pages/             # Tầng Route hiển thị màn hình (gọi các features lại với nhau)
+    ├── auth/
+    │   └── LoginPage.tsx
+    └── boards/
+        ├── DashboardPage.tsx
+        └── BoardPage.tsx
+```
+
+---
+
+# 6. System Architecture (đưa vào báo cáo)
 
 ```
                   React Router
@@ -202,29 +233,6 @@ if (!isAuthenticated) redirect("/login")
             List     List     List
               │
             Cards
-```
-
----
-
-# 6. Component Tree (rất tốt để đưa vào báo cáo)
-
-```
-App
- ├ Router
- │
- ├ Layout
- │
- ├ Pages
- │   ├ LoginPage
- │   ├ DashboardPage
- │   └ BoardPage
- │
- └ Components
-     ├ Board
-     ├ List
-     ├ Card
-     ├ AddCardForm
-     ├ AddListForm
 ```
 
 ---
@@ -542,29 +550,31 @@ export interface IBoard {
 
 ### 3. Kiến trúc Thư mục (Folder Structure) đề xuất
 
-Để dự án nhìn chuyên nghiệp và dễ quản lý, bạn nên chia thư mục theo hướng Feature-based (nhóm theo tính năng) thay vì nhóm theo loại file:
+Để dự án nhìn chuyên nghiệp và dễ quản lý, bạn nên chia thư mục theo hướng Feature-Sliced Design (FSD):
 
 ```text
 src/
+├── app/               # Tầng khởi tạo ứng dụng (Router, Global styles)
+│   ├── App.tsx
+│   └── router.tsx
 │
-├── assets/          # Hình ảnh, icons
-├── components/      # Các UI component dùng chung (Button, Input, Modal...)
-├── features/        # Các tính năng cốt lõi (Domain logic)
-│   ├── auth/        # Login form, auth state
-│   └── boards/      # BoardList, BoardDetail, Column, Card, dnd logic
+├── components/        # Tầng UI dùng chung toàn ứng dụng (Dumb components)
+│   ├── layout/        # Layouts như Header, Sidebar, MainLayout
+│   └── ui/            # UI Components (Buttons, Modals...)
 │
-├── hooks/           # Custom hooks (useLocalStorage, ...)
-├── layouts/         # MainLayout, AuthLayout
-├── routes/          # Cấu hình React Router (createBrowserRouter)
-│   ├── loaders.ts   # Các hàm lấy dữ liệu trước khi render route
-│   └── router.tsx   
+├── features/          # Tầng tính năng cốt lõi (Domain logic)
+│   ├── auth/          # Tính năng đăng nhập
+│   └── kanban/        # Tính năng Kanban chính
+│       ├── components/  # List, TaskCard, BoardCard, AddCardForm...
+│       ├── store/       # Zustand slices chuyên biệt (boardSlice, listSlice...)
+│       └── types/       # Interfaces cho IBoard, IList, ICard
 │
-├── types/           # Định nghĩa TypeScript interfaces
-├── utils/           # Helper functions (generateId, formatDate...)
-│
-├── App.tsx
-└── main.tsx
-
+└── pages/             # Tầng Route hiển thị màn hình (gọi các features lại với nhau)
+    ├── auth/
+    │   └── LoginPage.tsx
+    └── boards/
+        ├── DashboardPage.tsx
+        └── BoardPage.tsx
 ```
 
 ---

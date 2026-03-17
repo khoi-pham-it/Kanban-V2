@@ -1,4 +1,4 @@
-import { useBoardStore } from '../store/useBoardStore';
+import { useBoardStore } from '../features/kanban/store/useBoardStore';
 import type { LoaderFunctionArgs } from 'react-router-dom';
 
 export const boardsLoader = async () => {
