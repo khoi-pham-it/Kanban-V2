@@ -1,11 +1,25 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { useAuthStore } from "../../features/auth/store/useAuthStore";
 
 const Login = () => {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [email, setEmail] = useState("name@company.com");
+  const [password, setPassword] = useState("password123");
+
+  // Đã đăng nhập thì tự động chuyển hướng về trang chủ
+  if (isAuthenticated) {
+    return <Navigate to="/boards" replace />;
+  }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/boards");
+    if (email && password) {
+      login(email, password);
+      navigate("/boards");
+    }
   };
 
   return (
@@ -47,7 +61,8 @@ const Login = () => {
                 name="email"
                 placeholder="name@company.com"
                 type="email"
-                defaultValue="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
@@ -77,7 +92,8 @@ const Login = () => {
                 name="password"
                 placeholder="••••••••"
                 type="password"
-                defaultValue="password123"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>

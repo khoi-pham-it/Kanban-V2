@@ -1,6 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../features/auth/store/useAuthStore";
 
 const Sidebar = () => {
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   return (
     <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col h-full">
       <div className="p-6 flex items-center gap-3">
@@ -52,13 +55,31 @@ const Sidebar = () => {
 
       <div className="p-4 mt-auto border-t border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3 mt-4 px-2">
-          <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-xs">
-            U
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt="Avatar"
+              className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-xs">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+          )}
+          <div className="overflow-hidden flex-1">
+            <p className="text-sm font-bold truncate">{user?.name || "Bạn"}</p>
+            <p className="text-xs text-slate-500 truncate">{user?.email || "user@trello.mini"}</p>
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold truncate">Bạn</p>
-            <p className="text-xs text-slate-500 truncate">user@trello.mini</p>
-          </div>
+          <button
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors flex items-center"
+            title="Đăng xuất"
+          >
+            <span className="material-symbols-outlined text-lg">logout</span>
+          </button>
         </div>
       </div>
     </aside>
