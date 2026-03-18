@@ -1,8 +1,4 @@
-# Phân công nhiệm vụ chi tiết (Cập nhật Giai đoạn 2)
-
-Hiện tại, **Mai Trần Tuấn Kiệt** đã hoàn thành xuất sắc 100% nhiệm vụ của mình ở Giai đoạn 1. Kiến trúc ứng dụng đã được nâng cấp lên **Feature-Sliced Design (FSD)** kết hợp với **Zustand Store**, **Immer**, **Persist** và tính năng **Authentication (Fake Login/Protected Routes)** đã hoạt động hoàn hảo.
-
-Dưới đây là bảng phân công công việc cụ thể cho 2 thành viên còn lại: **Vũ Lê Đức Anh** và **Phạm Nguyễn Nguyên Khôi** để tiếp tục hoàn thiện dự án.
+# Phân công nhiệm vụ chi tiết
 
 ---
 
@@ -17,7 +13,7 @@ Dưới đây là bảng phân công công việc cụ thể cho 2 thành viên 
 
 ---
 
-## 2. Vũ Lê Đức Anh - Trải nghiệm Người dùng (UI/UX) và Card Detail Modal
+## 2. Phạm Nguyễn Nguyên Khôi - Trải nghiệm Người dùng (UI/UX) và Card Detail Modal
 
 **Trạng thái:** Đang tiến hành (In Progress)
 **Trọng tâm:** Hoàn thiện trải nghiệm hiển thị (UI/UX) và các form tương tác phức tạp, đặc biệt là Modal xem chi tiết Thẻ (Card Detail Modal).
@@ -36,7 +32,7 @@ Dưới đây là bảng phân công công việc cụ thể cho 2 thành viên 
 
 ---
 
-## 3. Phạm Nguyễn Nguyên Khôi - Xử lý Kéo Thả (Drag & Drop Logic)
+## 3. Vũ Lê Đức Anh - Xử lý Kéo Thả (Drag & Drop Logic)
 
 **Trạng thái:** Đang tiến hành (In Progress)
 **Trọng tâm:** Tích hợp thư viện `@dnd-kit` để xử lý tính năng cốt lõi và phức tạp nhất của Kanban: Kéo thả List và Card.
