@@ -34,9 +34,19 @@ Hiểu về Trello Mini là hiểu về mô hình phân cấp 3 tầng sau:
 2. **List (Danh sách/Cột):** Nằm trong Board, đại diện cho một trạng thái của quy trình làm việc hoặc một hạng mục phân loại (VD: "Đang làm", "Hoàn thành").
 3. **Card (Thẻ):** Nằm trong List, là đơn vị công việc nhỏ nhất. Mỗi Card chứa tiêu đề nhiệm vụ, mô tả chi tiết, nhãn (labels), và có thể di chuyển tự do giữa các List.
 
-## 5. Tại sao không có Backend? (Giai đoạn hiện tại)
+## 5. Kiến trúc Nền tảng (Technical Stack)
 
-Ở phiên bản hiện tại, Trello Mini ưu tiên sự độc lập và tốc độ triển khai. Chúng ta mô phỏng (fake) quá trình xác thực và lưu trữ toàn bộ dữ liệu vào **Local Storage** của trình duyệt. Điều này giúp:
-- Triển khai ứng dụng ở bất kỳ đâu (Github Pages, Vercel) chỉ với các file tĩnh.
-- Đảm bảo ứng dụng chạy cực nhanh vì không có độ trễ mạng (Network Latency) khi giao tiếp với Server.
-- Buộc đội ngũ phát triển (Dev Team) phải tập trung tối đa vào việc tối ưu hóa luồng State (State Flow) và trải nghiệm UI/UX ở phía Client-side trước khi tính đến việc scale lên Backend thực tế.
+Trello Mini đặt nền móng bằng những công nghệ hiện đại và mở rộng nhất:
+- **Ngôn ngữ:** TypeScript.
+- **Thư viện UI:** React 19 (Component-based).
+- **Quản lý State Toàn cục:** Zustand + Immer + Persist Middleware (Loại bỏ hoàn toàn boilerplate của Context API/Redux).
+- **Định tuyến (Routing):** React Router v6 (Data Mode).
+- **Kéo Thả (Drag & Drop):** `@dnd-kit/core`.
+- **Cấu trúc Mã nguồn:** Feature-Sliced Design (FSD).
+
+## 6. Tại sao không có Backend? (Giai đoạn hiện tại)
+
+Ở phiên bản hiện tại, Trello Mini ưu tiên sự độc lập và tốc độ triển khai. Quá trình xác thực (Authentication) được mô phỏng và toàn bộ dữ liệu được quản lý bởi **Zustand** rồi tự động đồng bộ (persist) vào **Local Storage** của trình duyệt. Điều này mang lại lợi ích khổng lồ:
+- Triển khai ứng dụng ở bất kỳ đâu (Github Pages, Vercel, Netlify) chỉ với các file tĩnh.
+- Tốc độ tải và tương tác cực nhanh (Instant Feedback) vì không có độ trễ mạng (Network Latency) khi giao tiếp với Server.
+- Buộc đội ngũ phát triển (Dev Team) phải rèn luyện và làm chủ hoàn toàn luồng State (State Flow), giải quyết các bài toán hóc búa về hiệu năng (Re-renders) ở phía Client-side trước khi tính đến việc kết nối Backend thực tế.

@@ -1,91 +1,65 @@
 # Hướng dẫn Triển khai Logic (Roadmap cho Dev Team)
 
-Chào mừng các bạn dev! Hiện tại giao diện (UI) tĩnh của Trello Mini đã được xây dựng hoàn thiện khoảng 80%. Nhiệm vụ tiếp theo của team là biến các giao diện vô hồn này thành một ứng dụng sống động. 
+Chào mừng các bạn dev! Hiện tại hệ thống nền tảng kiến trúc **Feature-Sliced Design (FSD)** và quản lý dữ liệu toàn cục với **Zustand** đã được thiết lập 100%. Nhiệm vụ tiếp theo của team (cụ thể là Đức Anh và Nguyên Khôi) là kết hợp UI với Logic và kích hoạt Kéo Thả (Drag & Drop).
 
-Dưới đây là kế hoạch từng bước (Step-by-step) để các bạn triển khai. Hãy làm theo đúng thứ tự này để tránh bị "ngợp".
-
----
-
-## Bước 1: Khởi tạo Context và Reducer (Nền tảng dữ liệu)
-
-Trước khi gắn dữ liệu vào UI, chúng ta cần một nơi để chứa dữ liệu.
-
-1. **Tạo `boardReducer.ts`**:
-   - Định nghĩa các hằng số Action Types: `ADD_LIST`, `ADD_CARD`, `DELETE_CARD`, v.v.
-   - Viết hàm `boardReducer(state, action)` chứa logic cập nhật State (nhớ clone deep mảng dữ liệu, không mutate trực tiếp state cũ).
-   
-2. **Tạo `BoardContext.tsx`**:
-   - Khởi tạo Context: `export const BoardContext = createContext(...)`.
-   - Viết Component `BoardProvider` bọc lấy ứng dụng.
-   - Bên trong `BoardProvider`, gọi `useReducer(boardReducer, initialState)`.
-
-3. **Viết Custom Hook `useBoards` và `useCards`**:
-   - Dùng `useContext(BoardContext)` bên trong các hook này.
-   - Export ra các hàm tiện ích như `addCard`, `deleteList` để UI dễ dàng gọi.
+Dưới đây là lộ trình triển khai chi tiết cho 2 tính năng trọng tâm còn lại.
 
 ---
 
-## Bước 2: Thay thế Mock Data và Gắn Sự kiện (Wiring)
+## 1. Hoàn thiện Component và Kết nối Store (UI Wiring)
 
-Khi Context đã sẵn sàng, hãy nối nó với giao diện:
+Mọi dữ liệu tĩnh (mock data) ở các form nhập liệu đều đã được thay bằng Zustand Store (`useBoardStore`). Giờ là lúc đi sâu vào các Modal.
 
-1. **Hiển thị dữ liệu thực:**
-   - Vào `Dashboard.tsx` và `BoardDetail.tsx`, thay vì dùng `useLoaderData` tĩnh, hãy lấy danh sách `boards` từ Custom Hook `useBoards()`.
-   
-2. **Kích hoạt Form Thêm mới:**
-   - Mở `AddCardForm.tsx`, import hook `useCards()`. 
-   - Trong hàm `handleSubmit`, gọi hàm `addCard(listId, title)`.
-   - Làm tương tự với `AddListForm.tsx`.
-   - *Kiểm tra:* Thử thêm Card/List, nếu UI tự động render ra thẻ mới là bạn đã làm đúng cơ chế State-driven!
+1. **Hiển thị Form Thêm mới linh hoạt:**
+   - Trong `src/features/kanban/components/AddCardForm.tsx`, khi nhấn "Thêm thẻ", hãy dùng thư viện `Immer` của Zustand để chèn một đối tượng `Card` vào mảng `list.cards`.
+   - Form cần có trạng thái `isEditing` để khi người dùng click ra ngoài (onBlur) hoặc ấn Esc, form sẽ tự động thu nhỏ lại.
 
-3. **Kích hoạt tính năng Xóa/Sửa:**
-   - Gắn sự kiện `onClick` vào các icon thùng rác (Delete) trong `List.tsx` và `TaskCard.tsx`.
-   - Gắn logic truyền data thực vào `CardModal.tsx` để xem chi tiết.
+2. **Cập nhật Modal Chi tiết (CardModal):**
+   - Modal cần hiển thị toàn bộ thuộc tính của Thẻ: `title`, `description`, `dueDate` (Ngày hết hạn), `labels` (Nhãn dán).
+   - Hãy thiết kế giao diện bằng Tailwind CSS sao cho giống hệt Trello: có các ô màu nhỏ đại diện cho nhãn dán, click vào ô mô tả để biến nó thành một ô `textarea` có thể chỉnh sửa trực tiếp.
+   - Gọi hàm `updateCard(boardId, listId, cardId, newData)` từ `useBoardStore` để ghi nhận các thay đổi này xuống Local Storage tự động (nhờ middleware Persist).
 
 ---
 
-## Bước 3: Đồng bộ Local Storage (Persistence)
+## 2. Kéo Thả với Dnd-Kit (Trọng tâm kỹ thuật)
 
-Đừng để F5 làm mất hết công sức.
-
-1. **Khởi tạo dữ liệu từ Local Storage:**
-   - Trong `BoardProvider`, thay vì truyền `initialState` trống vào `useReducer`, hãy viết một hàm khởi tạo (Lazy initializer) để đọc từ `localStorage.getItem('trello-data')`. Nếu không có, mới dùng mảng rỗng.
-
-2. **Lưu dữ liệu tự động:**
-   - Thêm một `useEffect` vào `BoardProvider` lắng nghe sự thay đổi của biến `state`. Bất cứ khi nào `state` đổi, hãy gọi `localStorage.setItem('trello-data', JSON.stringify(state))`.
-
----
-
-## Bước 4: Kéo Thả với Dnd-Kit (Trùm cuối)
-
-Đây là phần "khó nhằn" nhất dự án. Hãy làm theo tài liệu của `@dnd-kit`.
+Tính năng Kéo thả (Drag & Drop) đòi hỏi sự phối hợp rất chặt chẽ giữa `dnd-kit/core` và `Zustand Store`. Khôi sẽ làm theo các bước này:
 
 1. **Cài đặt thư viện:**
+   Dự án đã sử dụng bộ thư viện chính thức của `@dnd-kit`:
    `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
 
-2. **Thiết lập DndContext:**
-   - Trong `BoardDetail.tsx`, bọc toàn bộ khu vực chứa các List bằng thẻ `<DndContext>`.
-   - Định nghĩa các hàm `onDragStart`, `onDragOver`, `onDragEnd` để theo dõi hành động kéo thả.
+2. **Thiết lập `<DndContext>`:**
+   - Mở `src/pages/boards/BoardPage.tsx`. Bọc toàn bộ container chứa các cột (Lists) bằng component `<DndContext>`.
+   - Để tránh việc "click nhầm thành kéo", hãy cấu hình các `Sensors`:
+     ```tsx
+     const sensors = useSensors(
+       useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+       useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+     );
+     // ... <DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDragStart={handleDragStart}>
+     ```
 
-3. **Kéo thả List (Chiều ngang):**
-   - Bọc mảng chứa các `List` bằng `<SortableContext items={listIds} strategy={horizontalListSortingStrategy}>`.
-   - Trong component `List.tsx`, sử dụng hook `useSortable` để biến List thành phần tử có thể cầm nắm. Gắn các thuộc tính `attributes`, `listeners`, và `transform` vào thẻ `div` gốc của List.
+3. **Kéo thả Cột (Horizontal Sorting):**
+   - Bọc mảng các List (trong hàm map của BoardPage) bằng `<SortableContext items={listIds} strategy={horizontalListSortingStrategy}>`.
+   - Trong component `List.tsx`, dùng hook `useSortable({ id: list.id })`. Hook này trả về `attributes`, `listeners`, `setNodeRef`, và `transform`. Bạn phải gán chúng vào thẻ `div` gốc của List để biến nó thành vật thể kéo được.
+   - Khi sự kiện `onDragEnd` xảy ra, gọi hàm `moveList` của Zustand để hoán đổi vị trí 2 phần tử trong mảng `board.lists`.
 
-4. **Kéo thả Card (Chiều dọc & Xuyên List):**
-   - Bọc mảng chứa các `TaskCard` bên trong mỗi List bằng `<SortableContext items={cardIds} strategy={verticalListSortingStrategy}>`.
-   - Trong `TaskCard.tsx`, dùng hook `useSortable` tương tự như List.
-
-5. **Xử lý Logic `onDragEnd` & `onDragOver`:**
-   - Nếu kéo List: Chuyển đổi vị trí 2 List trong mảng `lists` (dispatch action `REORDER_LIST`).
-   - Nếu kéo Card cùng một List: Chuyển đổi vị trí 2 Card (dispatch action `REORDER_CARD`).
-   - Nếu kéo Card sang List khác: Bắt sự kiện `onDragOver` để gỡ Card ra khỏi List nguồn và chèn vào List đích. 
+4. **Kéo thả Thẻ (Vertical Sorting & Cross-List):**
+   - Tương tự, bọc mảng các `TaskCard` trong mỗi Cột bằng `<SortableContext items={cardIds} strategy={verticalListSortingStrategy}>`.
+   - Trong `TaskCard.tsx`, gắn `useSortable({ id: card.id })`.
+   - Đây là phần khó nhất: Sự kiện **`onDragOver`**. Khi bạn nhấc thẻ A từ Cột 1 sang lơ lửng trên Cột 2, bạn phải phát hiện sự kiện này, lấy dữ liệu tạm thời ra và di chuyển Thẻ A sang Cột 2 ở mặt giao diện để người dùng có thể "nhìn trước" vị trí rơi.
+   - Khi nhả chuột (**`onDragEnd`**), gọi action `moveCard` từ `useBoardStore` để chốt hạ vị trí mới (Index) và Cột mới (targetListId) vào Global State.
 
 ---
 
-## Lời khuyên cuối
+## 3. Quản lý Rủi ro (Performance & Renders)
 
-- **Chia để trị:** Đừng làm cả bước 4 cùng lúc. Hãy làm kéo thả List xong xuôi, đảm bảo chạy tốt, rồi mới làm kéo thả Card.
-- **Dùng React DevTools:** Đây là người bạn thân nhất để kiểm tra xem Context State có đang cập nhật đúng hay không.
-- **Log kỹ càng:** Khi làm kéo thả, hãy `console.log(active.id, over.id)` để hiểu chính xác phần tử nào đang được kéo và nó đang bay ngang qua phần tử nào.
+Khi cấu hình Kéo thả, rất dễ gặp tình trạng re-render toàn bộ giao diện khiến thao tác bị giật lag (Drop FPS).
 
-Chúc team dev code vui vẻ và không bị bug hành!
+**Giải pháp bắt buộc:**
+- Sử dụng **Atomic Selectors** của Zustand khi lấy dữ liệu:
+  Thay vì `const { boards } = useBoardStore()`, hãy dùng `const list = useBoardStore((state) => state.boards.find(b => b.id === boardId).lists.find(l => l.id === listId))`.
+- Trong `TaskCard.tsx`, chỉ truyền dữ liệu cơ bản (primitive types như string, id) nếu có thể, hạn chế truyền cả một object khổng lồ xuống dưới để `React.memo` có thể hoạt động hiệu quả.
+
+Chúc team dev code vui vẻ và gặt hái thành công!
