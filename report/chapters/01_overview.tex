@@ -1,11 +1,21 @@
 \part{TỔNG QUAN VÀ PHÂN TÍCH THỊ TRƯỜNG}
 
-\chapter{Giới thiệu về ReactJS}
+\chapter{Tổng quan về Kiến trúc Web và Sự ra đời của ReactJS}
 
-\section{Lịch sử hình thành và Bối cảnh ra đời}
-Trước năm 2013, phần lớn các ứng dụng web trên thế giới được xây dựng dựa trên mô hình truyền thống: Server tạo ra các trang HTML tĩnh và gửi về Client. Khi các ứng dụng web ngày càng trở nên phức tạp, yêu cầu tương tác cao hơn, việc quản lý DOM (Document Object Model) thông qua Vanilla JavaScript hoặc jQuery dần bộc lộ nhiều điểm yếu. Mã nguồn trở nên rối rắm (Spaghetti code), khó bảo trì và đặc biệt là hiệu năng giảm sút nghiêm trọng khi có quá nhiều thao tác cập nhật giao diện cùng lúc.
+\section{Sự tiến hóa của Kiến trúc Web: Từ MPA đến SPA}
+Để hiểu được tầm vóc của ReactJS, chúng ta cần nhìn lại lịch sử phát triển của kiến trúc phần mềm trên nền web. Trong giai đoạn đầu của Internet (những năm 1990 - 2005), kiến trúc chủ đạo là \textbf{Multi-Page Application (MPA)}. Trong mô hình này, mỗi khi người dùng nhấp vào một đường dẫn (link) hoặc gửi một biểu mẫu (form), trình duyệt sẽ phải gửi toàn bộ yêu cầu (request) lên máy chủ (server). Máy chủ sau đó xử lý logic, truy vấn cơ sở dữ liệu, lắp ráp HTML, CSS và gửi lại toàn bộ một trang web mới toanh về cho người dùng. Cách làm này mang lại vô vàn điểm yếu:
+\begin{itemize}
+    \item \textbf{Độ trễ cao (High Latency):} Mỗi thao tác nhỏ đều yêu cầu tải lại (reload) toàn bộ trang, tạo ra những khoảng trắng (white screen) hoặc giật chớp màn hình, gây khó chịu cho người dùng.
+    \item \textbf{Lãng phí băng thông (Bandwidth Waste):} Các phần tử giao diện chung như Thanh điều hướng (Navbar), Chân trang (Footer) hay Thanh bên (Sidebar) bị tải lại lặp đi lặp lại một cách không cần thiết trong mỗi yêu cầu.
+    \item \textbf{Trải nghiệm người dùng kém (Poor UX):} Thiếu vắng các hiệu ứng chuyển cảnh mượt mà (transitions) và phản hồi tức thời (instant feedback) - những điều vốn dĩ đã là tiêu chuẩn trên các ứng dụng di động native.
+\end{itemize}
 
-Trong bối cảnh đó, ReactJS được phát triển bởi Jordan Walke - một kỹ sư phần mềm tại Facebook (nay là Meta). React ban đầu được tạo ra để giải quyết vấn đề cụ thể của Facebook: làm sao để cập nhật giao diện của tính năng News Feed và Chat một cách liên tục, theo thời gian thực mà không làm gián đoạn trải nghiệm người dùng. Năm 2013, ReactJS chính thức được phát hành dưới dạng mã nguồn mở và nhanh chóng tạo ra một cuộc cách mạng trong lĩnh vực lập trình Frontend.
+Trước những thách thức đó, \textbf{Single Page Application (SPA)} ra đời như một cuộc cách mạng. Kỹ thuật AJAX (Asynchronous JavaScript and XML) cho phép trình duyệt gửi và nhận dữ liệu ngầm từ máy chủ mà không cần tải lại trang. Trong mô hình SPA, chỉ có một file HTML duy nhất được gửi về (thường là \texttt{index.html}). Toàn bộ giao diện (UI) và logic điều hướng sau đó được xử lý hoàn toàn bởi JavaScript chạy trên máy khách (Client-side). Giao diện chỉ cập nhật cục bộ tại những phần tử thực sự thay đổi dữ liệu. Điều này mang lại trải nghiệm nhanh, mượt mà và gần giống với các ứng dụng máy tính truyền thống nhất.
+
+\section{Sự sụp đổ của jQuery và Sự ra đời của ReactJS}
+Khi các ứng dụng SPA ngày càng phức tạp (ví dụ như Facebook, Gmail, hay Google Maps), việc trực tiếp thao tác lên DOM (Document Object Model) bằng Vanilla JavaScript hoặc thư viện jQuery đã bộc lộ những lỗ hổng chí mạng. Các lập trình viên thường xuyên phải viết code để tìm kiếm một thẻ HTML thủ công, sửa đổi nội dung của nó, sau đó gắn thêm một trình lắng nghe sự kiện (Event Listener). Khi ứng dụng có hàng trăm tính năng tương tác chồng chéo lên nhau, luồng dữ liệu trở nên cực kỳ khó kiểm soát (Spaghetti Code), dẫn đến các lỗi (bugs) khó lường, memory leaks (rò rỉ bộ nhớ) và sụt giảm hiệu năng nghiêm trọng do quá trình vẽ lại DOM (Repaint \& Reflow) của trình duyệt diễn ra quá thường xuyên.
+
+Năm 2013, trong nỗ lực giải quyết triệt để bài toán hiệu năng hiển thị cho tính năng News Feed và Messenger, kỹ sư phần mềm Jordan Walke tại Facebook (nay là Meta) đã tạo ra **ReactJS**. Thay vì cung cấp thêm các công cụ để thao tác DOM trực tiếp, ReactJS giới thiệu một triết lý thiết kế đi ngược lại đám đông lúc bấy giờ. Nó được công bố lần đầu tiên tại hội nghị JSConf US dưới dạng mã nguồn mở và lập tức gây bão trong giới công nghệ.
 
 \section{Kiến trúc và Nguyên lý hoạt động cốt lõi}
 Sự thành công của ReactJS không đến từ việc cung cấp nhiều tính năng có sẵn, mà đến từ một triết lý thiết kế hoàn toàn mới. Các nguyên lý hoạt động cốt lõi bao gồm:
@@ -18,11 +28,45 @@ Sự thành công của ReactJS không đến từ việc cung cấp nhiều tí
     \item \textbf{Luồng dữ liệu một chiều (One-way Data Flow):} Khác với cơ chế Binding hai chiều (Two-way Data Binding) của Angular, React áp dụng luồng dữ liệu một chiều chảy từ Component cha xuống Component con thông qua \texttt{props}. Điều này giúp việc theo dõi sự thay đổi của dữ liệu trở nên dễ đoán (predictable), giảm thiểu tối đa các lỗi liên quan đến trạng thái ứng dụng.
 \end{itemize}
 
+\section{Phân tích Hệ sinh thái và Các Triết lý Quản lý Trạng thái (State Management)}
+Trong thế giới Frontend hiện đại, làm sao để quản lý Dữ liệu/Trạng thái (State) ở cấp độ toàn cục (Global) là bài toán tốn nhiều giấy mực nhất. Trước khi đi đến quyết định sử dụng \textbf{Zustand}, nhóm đã tiến hành khảo sát và đánh giá 3 trường phái quản lý State phổ biến nhất trên thị trường React:
+
+\subsection{Trường phái Flux/Redux (Centralized Store)}
+Ra đời vào khoảng năm 2015, Redux là đại diện tiêu biểu nhất cho kiến trúc Flux do Facebook đề xuất.
+\begin{itemize}
+    \item \textbf{Cơ chế:} Toàn bộ dữ liệu của ứng dụng được đặt trong một kho (Store) duy nhất ở cấp độ Root. Để thay đổi dữ liệu, các Component phải "phát" (Dispatch) ra một "hành động" (Action). Một "hàm xử lý" (Reducer) thuần túy (Pure Function) sẽ nhận Action này và tính toán ra cây State mới.
+    \item \textbf{Ưu điểm:} Cực kỳ an toàn, dễ gỡ lỗi (Time-travel debugging) và dễ dự đoán (Predictable). Rất phù hợp cho các siêu dự án ngân hàng, tài chính.
+    \item \textbf{Nhược điểm:} Redux nổi tiếng với lượng code thừa (Boilerplate) khổng lồ. Để thêm một tính năng đơn giản, lập trình viên phải sửa 3-4 file khác nhau (Action Types, Action Creators, Reducers). Sự cồng kềnh này không phù hợp cho một dự án tốc độ cao như Trello Mini.
+\end{itemize}
+
+\subsection{Trường phái Atomic (Recoil, Jotai)}
+Thay vì lưu tất cả vào một kho khổng lồ, trường phái Atomic chia nhỏ dữ liệu thành các nguyên tử (Atoms) riêng biệt.
+\begin{itemize}
+    \item \textbf{Cơ chế:} Các Atoms giống như những biến State rời rạc nằm ngoài Component. Các Component nào cần dùng Atom nào thì đăng ký (subscribe) vào Atom đó. Khi Atom đổi giá trị, chỉ duy nhất những Component subscribe nó bị re-render.
+    \item \textbf{Nhược điểm:} Việc quản lý một mạng lưới hàng trăm Atoms rời rạc khiến việc theo dõi luồng chảy của dữ liệu (Data Flow) trên diện rộng trở nên khó khăn.
+\end{itemize}
+
+\subsection{Trường phái Proxy-based (MobX, Valtio)}
+\begin{itemize}
+    \item \textbf{Cơ chế:} Sử dụng tính năng Proxy của ES6 để theo dõi các đối tượng dữ liệu. Lập trình viên có thể thay đổi trực tiếp (mutate) thuộc tính của Object giống như code JavaScript thuần (\texttt{state.count++}). Thư viện sẽ tự động bắt sự kiện và ra lệnh cho React cập nhật giao diện.
+    \item \textbf{Nhược điểm:} Phá vỡ nguyên tắc Bất biến (Immutability) thiêng liêng của React. Việc cho phép sửa trực tiếp State ở khắp mọi nơi có thể dẫn đến hệ lụy cực lớn khi dự án Scale-up.
+\end{itemize}
+
+\subsection{Tại sao lại là Zustand?}
+Zustand nổi lên như một "kẻ cứu rỗi", kết hợp hoàn hảo ưu điểm của tất cả các trường phái trên:
+\begin{itemize}
+    \item Nó giữ lại kho lưu trữ trung tâm (Centralized Store) của Redux nhưng vứt bỏ đi toàn bộ Boilerplate lằng nhằng của Action Types và Reducers.
+    \item Nó giải quyết triệt để bài toán hiệu năng (như trường phái Atomic) nhờ cơ chế \textbf{Selectors}: Component chỉ lấy chính xác những gì nó cần, State bên ngoài có đổi thì Component cũng không bị ép Re-render.
+    \item Khi kết hợp với middleware \textbf{Immer}, nó cho phép lập trình viên viết code như trường phái Proxy (mutate trực tiếp) nhưng bản chất bên dưới Immer vẫn tạo ra một cây State hoàn toàn Mới (Immutability an toàn tuyệt đối).
+\end{itemize}
+Sự lựa chọn Zustand + Immer + Persist là quyết định sáng suốt và chứng tỏ tầm nhìn kiến trúc công nghệ hiện đại bậc nhất của nhóm cho đồ án này.
+
 \section{Đánh giá và So sánh công nghệ (Critical Thinking)}
-Để hiểu rõ tại sao nhóm chọn React cho đồ án này, cần có sự đánh giá và so sánh với các công nghệ khác:
+Để củng cố hơn lập luận bảo vệ sự lựa chọn công nghệ cho đồ án, cần có sự đánh giá và so sánh React với các công nghệ Frontend khác:
 
 \subsection{Tại sao không dùng Vanilla JS / jQuery?}
-Với một ứng dụng như Kanban Board, việc kéo thả một Card từ List A sang List B đòi hỏi phải cập nhật lại giao diện của cả hai List, tính toán vị trí, và cập nhật mảng dữ liệu gốc. Nếu dùng JavaScript thuần, lập trình viên phải viết code tìm kiếm thủ công từng node DOM, gỡ bỏ và chèn node mới. Điều này rất dễ gây lỗi đồng bộ giữa UI và Dữ liệu. Với React, chúng ta theo triết lý \textit{State-Driven UI} (Giao diện được điều khiển bởi trạng thái): Lập trình viên không bao giờ chạm vào DOM, chỉ cần cập nhật mảng dữ liệu State, React sẽ tự động vẽ lại UI.
+Với một ứng dụng như Kanban Board, việc kéo thả một Card từ List A sang List B đòi hỏi phải cập nhật lại giao diện của cả hai List, tính toán vị trí, tính toán Index nội bộ, và cập nhật mảng dữ liệu gốc. Nếu dùng JavaScript thuần, lập trình viên phải viết code tìm kiếm thủ công từng node DOM, tính toán toán học để gỡ bỏ và chèn node mới. Khi ứng dụng lớn lên, điều này sinh ra những đoạn mã cực kỳ phức tạp và dễ gây lỗi đồng bộ (UI đang hiển thị ở Cột A nhưng dữ liệu thực tế lại báo ở Cột B).
+Với React, chúng ta theo triết lý \textit{State-Driven UI} (Giao diện được điều khiển bởi trạng thái): Lập trình viên KHÔNG BAO GIỜ chạm vào DOM. Chúng ta chỉ cần thiết lập luật chơi cho mảng dữ liệu State. Mọi tính toán thay đổi giao diện, React sẽ tự động lo liệu dựa trên đối chiếu Virtual DOM.
 
 \subsection{ReactJS so với Vue.js và Angular}
 \begin{itemize}
