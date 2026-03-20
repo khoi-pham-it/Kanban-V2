@@ -20,6 +20,13 @@ export const createListSlice: StateCreator<
         board.lists.push(newList);
       }
     }),
+  updateList: (boardId, listId, title) =>
+    set((state) => {
+      const board = state.boards.find((b) => b.id === boardId);
+      if (!board) return;
+      const list = board.lists.find((l) => l.id === listId);
+      if (list) list.title = title.trim() || list.title;
+    }),
   deleteList: (boardId, listId) =>
     set((state) => {
       const board = state.boards.find((b) => b.id === boardId);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ICard, Id } from "../types";
 import CardModal from "./CardModal";
 import { useBoardStore } from "../store/useBoardStore";
+import { getLabelClassName } from "../constants";
 
 interface TaskCardProps {
   card: ICard;
@@ -43,9 +44,9 @@ const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
             {card.labels.map((label, idx) => (
               <span
                 key={idx}
-                className="block w-8 h-1.5 rounded-full bg-primary/60"
+                className={`block w-8 h-1.5 rounded-full ${getLabelClassName(label)}`}
                 title={label}
-              ></span>
+              />
             ))}
           </div>
         )}
@@ -59,6 +60,8 @@ const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
 
       {isModalOpen && (
         <CardModal
+          boardId={boardId}
+          listId={listId}
           card={card}
           listTitle={listTitle}
           onClose={() => setIsModalOpen(false)}

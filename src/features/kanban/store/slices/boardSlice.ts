@@ -37,6 +37,14 @@ export const createBoardSlice: StateCreator<
         lists: [],
       });
     }),
+  updateBoard: (boardId, title) =>
+    set((state) => {
+      const board = state.boards.find((b) => b.id === boardId);
+      if (!board) return;
+      const next = title.trim();
+      if (!next) return;
+      board.title = next;
+    }),
   deleteBoard: (boardId) =>
     set((state) => {
       state.boards = state.boards.filter((b) => b.id !== boardId);

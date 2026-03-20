@@ -34,7 +34,7 @@ const BoardCard = ({ board, idx, onDelete }: BoardCardProps) => {
       </div>
       <button
         onClick={(e) => onDelete(e, board.id)}
-        className="absolute top-3 right-3 p-1.5 bg-black/20 hover:bg-red-500/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all"
+        className="absolute flex align-center top-3 right-3 p-1.5 bg-black/20 hover:bg-red-500/80 text-white rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all"
         title="Xóa bảng"
       >
         <span className="material-symbols-outlined text-lg">delete</span>

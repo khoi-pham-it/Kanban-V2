@@ -1,11 +1,23 @@
+import { useState, useRef, useEffect } from "react";
 import BoardCard from "../../features/kanban/components/BoardCard";
 import { useBoardStore } from "../../features/kanban/store/useBoardStore";
+import Modal from "../../components/ui/Modal";
 
 const Dashboard = () => {
-  // Lấy dữ liệu từ store bằng selectors để tối ưu re-render
   const boards = useBoardStore((state) => state.boards);
   const addBoard = useBoardStore((state) => state.addBoard);
   const deleteBoard = useBoardStore((state) => state.deleteBoard);
+
+  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
+  const [boardTitleDraft, setBoardTitleDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isCreateBoardOpen) {
+      setBoardTitleDraft("");
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }, [isCreateBoardOpen]);
 
   const handleDeleteBoard = (e: React.MouseEvent, boardId: string | number) => {
     e.stopPropagation();
@@ -14,10 +26,16 @@ const Dashboard = () => {
     }
   };
 
-  const handleAddBoard = () => {
-    const title = prompt("Nhập tên bảng mới:");
-    if (title && title.trim()) {
-      addBoard(title.trim());
+  const handleOpenCreateBoard = () => {
+    setIsCreateBoardOpen(true);
+  };
+
+  const handleSubmitCreateBoard = (e: React.FormEvent) => {
+    e.preventDefault();
+    const title = boardTitleDraft.trim();
+    if (title) {
+      addBoard(title);
+      setIsCreateBoardOpen(false);
     }
   };
 
@@ -33,7 +51,7 @@ const Dashboard = () => {
           </p>
         </div>
         <button
-          onClick={handleAddBoard}
+          onClick={handleOpenCreateBoard}
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <span className="material-symbols-outlined">add_circle</span>
@@ -52,7 +70,7 @@ const Dashboard = () => {
         ))}
 
         <button
-          onClick={handleAddBoard}
+          onClick={handleOpenCreateBoard}
           className="group relative bg-slate-100 dark:bg-slate-800/40 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center h-48 gap-3"
         >
           <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 group-hover:bg-primary/20 group-hover:text-primary transition-colors">
@@ -63,6 +81,43 @@ const Dashboard = () => {
           </span>
         </button>
       </div>
+
+      <Modal
+        open={isCreateBoardOpen}
+        title="Tạo bảng mới"
+        onClose={() => setIsCreateBoardOpen(false)}
+      >
+        <form onSubmit={handleSubmitCreateBoard} className="flex flex-col gap-4">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Tên bảng
+          </label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={boardTitleDraft}
+            onChange={(e) => setBoardTitleDraft(e.target.value)}
+            placeholder="Nhập tên bảng..."
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsCreateBoardOpen(false)}
+              className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={!boardTitleDraft.trim()}
+              className="px-4 py-2 rounded-lg bg-primary text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            >
+              Tạo bảng
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
