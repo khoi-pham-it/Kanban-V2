@@ -1,0 +1,80 @@
+\chapter{Kiểm thử và Triển khai (Testing \& Deployment)}
+
+\section{Chiến lược Kiểm thử Frontend (Frontend Testing Strategy)}
+Trong phát triển phần mềm hiện đại, việc đảm bảo chất lượng mã nguồn (Quality Assurance) không chỉ phụ thuộc vào việc kiểm tra thủ công (Manual Testing) mà cần được tự động hóa để phát hiện lỗi sớm nhất có thể. Đối với một ứng dụng Frontend có tính tương tác cao như Trello Mini, nhóm đã xây dựng một chiến lược kiểm thử bao gồm hai cấp độ chính: Kiểm thử Đơn vị (Unit Testing) và Kiểm thử Giao diện (Component Testing).
+
+\subsection{Kiểm thử Đơn vị (Unit Testing) với Vitest}
+Kiểm thử đơn vị tập trung vào việc xác minh tính đúng đắn của các hàm logic, các hooks tự tạo (Custom Hooks) và đặc biệt là logic quản lý trạng thái trong Zustand Store. Nhóm quyết định sử dụng \textbf{Vitest} thay vì Jest truyền thống, vì Vitest tương thích hoàn hảo với hệ sinh thái Vite, mang lại tốc độ thực thi cực nhanh và hỗ trợ sẵn TypeScript mà không cần cấu hình phức tạp.
+
+Một ví dụ tiêu biểu là việc kiểm thử hàm xử lý logic khi người dùng kéo thả một thẻ (Card) sang một cột (List) mới. Hàm này yêu cầu tính toán lại chỉ mục (index) và cập nhật mảng dữ liệu mà không làm thay đổi các thẻ khác:
+
+\begin{lstlisting}
+import { describe, it, expect } from 'vitest';
+import { useBoardStore } from '../store/boardStore';
+
+describe('Board Store - Drag and Drop Logic', () => {
+  it('should move card to a different list correctly', () => {
+    // Khởi tạo trạng thái ban đầu
+    const store = useBoardStore.getState();
+    store.addList('List A');
+    store.addList('List B');
+    store.addCard('List A', 'Task 1');
+
+    // Thực hiện hành động kéo thả
+    store.moveCard(cardId, 'List A', 'List B', 0);
+
+    // Kiểm tra kết quả
+    const updatedState = useBoardStore.getState();
+    expect(updatedState.lists.find(l => l.name === 'List A').cards).toHaveLength(0);
+    expect(updatedState.lists.find(l => l.name === 'List B').cards[0].title).toBe('Task 1');
+  });
+});
+\end{lstlisting}
+
+\subsection{Kiểm thử Giao diện (Component Testing) với React Testing Library}
+Trong khi Unit Test đảm bảo logic hoạt động đúng, \textbf{React Testing Library (RTL)} được sử dụng để kiểm tra xem giao diện có phản hồi chính xác với các tương tác của người dùng hay không. RTL khuyến khích cách viết test dựa trên những gì người dùng thực sự nhìn thấy và tương tác (như tìm kiếm một nút bấm qua văn bản hiển thị) thay vì dựa vào chi tiết triển khai bên trong (như tên class CSS).
+
+\begin{lstlisting}
+import { render, screen, fireEvent } from '@testing-library/react';
+import AddCardForm from './AddCardForm';
+
+test('renders input field and adds new card on submit', () => {
+  const mockAddCard = vi.fn();
+  render(<AddCardForm listId="1" onAdd={mockAddCard} />);
+
+  // Mô phỏng người dùng nhập text
+  const input = screen.getByPlaceholderText('Nhập tiêu đề thẻ...');
+  fireEvent.change(input, { target: { value: 'Công việc mới' } });
+
+  // Mô phỏng click nút Thêm
+  const button = screen.getByText('Thêm thẻ');
+  fireEvent.click(button);
+
+  // Xác minh hàm onAdd được gọi đúng tham số
+  expect(mockAddCard).toHaveBeenCalledWith('1', 'Công việc mới');
+});
+\end{lstlisting}
+
+\section{Tích hợp và Triển khai liên tục (CI/CD)}
+
+\subsection{Đóng gói ứng dụng (Build) với Vite}
+Trước khi ứng dụng có thể được đưa lên môi trường sản xuất (Production), mã nguồn React (JSX/TypeScript) cần được biên dịch và đóng gói thành các tệp HTML, CSS và JavaScript thuần túy. Quá trình này được thực hiện thông qua \textbf{Vite} (với lõi là Rollup).
+
+Vite thực hiện hàng loạt các tối ưu hóa trong quá trình build:
+\begin{itemize}
+    \item \textbf{Minification:} Nén và loại bỏ khoảng trắng, comments, các đoạn mã không được sử dụng (Tree-shaking) để giảm thiểu kích thước tệp.
+    \item \textbf{Code Splitting:} Chia nhỏ bundle khổng lồ thành nhiều tệp tin (chunks) nhỏ hơn, cho phép trình duyệt tải bất đồng bộ (Lazy Load) khi cần thiết.
+    \item \textbf{Cache Busting:} Tự động thêm mã băm (hash) vào tên tệp tin (ví dụ: \texttt{main.[hash].js}) để đảm bảo trình duyệt luôn tải phiên bản mới nhất thay vì sử dụng bộ nhớ đệm (cache) cũ.
+\end{itemize}
+
+\subsection{Tự động hóa triển khai bằng GitHub Actions và Vercel}
+Để rút ngắn thời gian đưa sản phẩm tới tay người dùng và giảm thiểu sai sót do thao tác thủ công, nhóm đã thiết lập một luồng CI/CD (Continuous Integration / Continuous Deployment) hoàn toàn tự động sử dụng \textbf{GitHub Actions} kết hợp với nền tảng đám mây \textbf{Vercel}.
+
+Quy trình hoạt động diễn ra theo các bước sau:
+\begin{enumerate}
+    \item \textbf{Push code:} Mỗi khi một thành viên trong nhóm đẩy (push) mã nguồn mới lên nhánh \texttt{main} trên GitHub, một workflow sẽ tự động được kích hoạt.
+    \item \textbf{CI Pipeline (Kiểm tra chất lượng):} GitHub Actions sẽ khởi tạo một máy ảo (Runner), cài đặt các thư viện (\texttt{npm install}), chạy công cụ kiểm tra cú pháp (\texttt{ESLint}) và thực thi toàn bộ bộ Unit Test. Nếu bất kỳ một test case nào thất bại, quy trình sẽ dừng lại ngay lập tức và gửi thông báo cảnh báo cho nhóm.
+    \item \textbf{CD Pipeline (Triển khai):} Nếu bước CI vượt qua thành công, mã nguồn sẽ được chuyển giao cho Vercel. Nền tảng này sẽ tự động chạy lệnh \texttt{npm run build} và phân phối (deploy) các tệp tĩnh (static files) lên mạng lưới máy chủ toàn cầu (CDN - Content Delivery Network).
+\end{enumerate}
+
+Nhờ mô hình này, ứng dụng luôn được đảm bảo ở trạng thái ổn định nhất mỗi khi phát hành. Người dùng có thể truy cập vào đường dẫn trực tiếp do Vercel cung cấp để trải nghiệm phiên bản mới nhất của Trello Mini chỉ trong vòng chưa đầy 2 phút sau khi mã nguồn được hợp nhất.

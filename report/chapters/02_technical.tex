@@ -12,12 +12,12 @@
 
 \section{Cài đặt, Khởi tạo và Cấu hình TypeScript}
 Quy trình khởi tạo dự án với Vite được thực hiện nhanh gọn qua dòng lệnh CLI:
-\begin{verbatim}
+\begin{lstlisting}
 npm create vite@latest baby-trello -- --template react-ts
 cd baby-trello
 npm install
 npm run dev
-\end{verbatim}
+\end{lstlisting}
 Sự khác biệt cốt lõi nhất ở đây là hậu tố \texttt{react-ts}. Thay vì sử dụng JavaScript truyền thống với đặc tính kiểu động (Dynamic Typing) dễ dãi và tiềm ẩn nhiều lỗi \textit{runtime error}, dự án áp dụng \textbf{TypeScript}. TypeScript đóng vai trò như một lớp bảo vệ nghiêm ngặt:
 \begin{itemize}
     \item Cung cấp hệ thống kiểm tra kiểu tĩnh (Static Typing), giúp phát hiện lỗi sai ngay trong quá trình gõ code (Compile-time) thay vì đợi đến lúc chạy thử.
@@ -87,17 +87,66 @@ Chỉ với vài dòng cấu hình, mọi thay đổi trong \texttt{useBoardStor
 Một điểm yếu chết người của React là cơ chế Re-render: Khi Component cha thay đổi trạng thái, toàn bộ Component con sẽ bị render lại một cách mù quáng. Đối với ứng dụng Kanban, việc kéo một TaskCard di chuyển từng pixel có thể phát sinh hàng trăm lần thay đổi trạng thái mỗi giây. Nếu không tối ưu, giao diện sẽ bị đơ (lag).
 
 Nhờ kiến trúc của Zustand, nhóm đã giải quyết triệt để vấn đề này bằng kỹ thuật \textbf{Atomic Selectors}. Thay vì import toàn bộ đối tượng State khổng lồ vào Component:
-\begin{verbatim}
+\begin{lstlisting}
 // Cách làm sai (Gây re-render liên tục)
 const { boards } = useBoardStore();
-\end{verbatim}
+\end{lstlisting}
 
 Lập trình viên được ép buộc phải chỉ định (select) chính xác mảng dữ liệu mà Component đó quan tâm:
-\begin{verbatim}
+\begin{lstlisting}
 // Cách làm đúng chuẩn tối ưu hiệu năng
 const list = useBoardStore((state) =>
   state.boards.find(b => b.id === boardId)
        .lists.find(l => l.id === listId)
 );
-\end{verbatim}
+\end{lstlisting}
 Nhờ vậy, khi Thẻ A cập nhật nội dung, Zustand sẽ thông minh đối chiếu và \textit{chỉ render duy nhất Thẻ A}, hoàn toàn bỏ qua hàng ngàn Component Thẻ B, Thẻ C đang nằm cùng trên màn hình. Kỹ thuật này giúp ứng dụng đạt chỉ số 60 FPS (Frames Per Second) mượt mà ngay cả khi chạy trên trình duyệt của thiết bị di động yếu.
+
+\section{Design Patterns trong React và Sự chuyển dịch sang Custom Hooks}
+Trong quá trình phát triển của hệ sinh thái React, các kỹ sư phần mềm đã không ngừng tìm kiếm các mẫu thiết kế (Design Patterns) để tái sử dụng logic (Logic Reuse) giữa các Component. Sự tiến hóa của các mẫu thiết kế này phản ánh sự trưởng thành của React.
+
+\subsection{Higher-Order Components (HOC) và Render Props}
+Trước khi Hooks ra đời (React 16.8), hai mẫu thiết kế thống trị là \textbf{Higher-Order Components (HOC)} và \textbf{Render Props}.
+\begin{itemize}
+    \item \textbf{HOC (Higher-Order Component):} Là một hàm nhận vào một Component và trả về một Component mới với các props hoặc logic được bổ sung. Tuy nhiên, việc lạm dụng HOC dẫn đến hiện tượng "Wrapper Hell" - cây Component bị độn lên với hàng tá các lớp bọc (wrappers) lồng nhau, làm cho việc gỡ lỗi (debugging) trở thành ác mộng.
+    \item \textbf{Render Props:} Là kỹ thuật chia sẻ mã giữa các React components bằng cách sử dụng một prop có giá trị là một hàm. Giống như HOC, Render Props giúp tái sử dụng logic, nhưng lại dễ rơi vào tình trạng "Callback Hell" khi lồng nhiều Render Props với nhau.
+\end{itemize}
+
+\subsection{Sự thống trị của Custom Hooks}
+Sự ra đời của \textbf{Custom Hooks} đã thay đổi hoàn toàn cách chúng ta chia sẻ logic. Custom Hooks cho phép lập trình viên tách biệt hoàn toàn phần logic (state, side effects) ra khỏi phần giao diện (UI) mà không làm thay đổi cấu trúc của cây Component. Trong dự án Trello Mini, nhóm đã tự xây dựng nhiều Custom Hooks như \texttt{useDraggable} hoặc \texttt{useBoardState} để đóng gói các logic phức tạp, giúp các Component trở nên "mỏng" (thin) và dễ kiểm thử hơn.
+
+\section{Giải thích sâu về thư viện kéo thả dnd-kit}
+Việc hiện thực hóa tính năng Kéo Thả (Drag and Drop - DnD) trong React là một bài toán khó. Các thư viện truyền thống như \texttt{react-beautiful-dnd} tuy dễ dùng nhưng thiếu tính linh hoạt và hiệu năng giảm sút khi số lượng DOM lớn. Nhóm quyết định sử dụng \textbf{dnd-kit} - một thư viện DnD hiện đại, module hóa và tập trung vào hiệu suất, khả năng truy cập (accessibility).
+
+\subsection{Kiến trúc của dnd-kit: Sensors và Modifiers}
+\begin{itemize}
+    \item \textbf{Sensors (Cảm biến):} \texttt{dnd-kit} trừu tượng hóa các thao tác đầu vào (Input) thành các Sensors. Nhóm cấu hình \texttt{PointerSensor} (dành cho chuột và cảm ứng) và \textbf{KeyboardSensor} (dành cho người dùng điều hướng bằng bàn phím). Bằng cách thiết lập độ trễ (activation constraint) là 250ms, hệ thống có thể phân biệt được đâu là một cú click chuột thông thường và đâu là hành động bắt đầu kéo (Drag start).
+    \item \textbf{Modifiers (Bộ điều chỉnh):} Cho phép can thiệp vào tọa độ (x, y) của phần tử đang được kéo trước khi nó được vẽ lên màn hình. Ví dụ, tính năng kéo thả Cột (List) sử dụng \texttt{restrictToHorizontalAxis} để giới hạn chuyển động chỉ diễn ra trên trục ngang.
+\end{itemize}
+
+\subsection{Thuật toán phát hiện va chạm (Collision Detection)}
+Làm sao để hệ thống biết được khi nào người dùng đã thả Thẻ A vào đúng Cột B? Đây là lúc các thuật toán \textit{Collision Detection} phát huy tác dụng. Trello Mini áp dụng kết hợp:
+\begin{itemize}
+    \item \textbf{closestCenter:} Tính toán khoảng cách từ tâm của phần tử đang được kéo (Drag Overlay) đến tâm của các vùng thả (Droppable areas). Thẻ sẽ rơi vào vùng có khoảng cách tâm ngắn nhất.
+    \item \textbf{closestCorners:} Tính toán khoảng cách dựa trên 4 góc của hộp bao quanh (Bounding box). Phù hợp cho các lưới (Grid) hoặc danh sách phức tạp.
+\end{itemize}
+
+\section{Quản lý State chuyên sâu: Context API vs Redux vs Zustand}
+Lựa chọn công cụ quản lý State là một trong những quyết định kiến trúc quan trọng nhất.
+
+\subsection{Hạn chế của Context API}
+Context API có sẵn trong React rất tuyệt vời cho các dữ liệu ít thay đổi (như Theme, User Auth). Tuy nhiên, khi áp dụng cho bài toán Trello (với State là một mảng hàng trăm Thẻ thay đổi liên tục), Context API bộc lộ điểm yếu "chết người": Mọi Component tiêu thụ (consume) Context đều bị re-render mỗi khi giá trị Context thay đổi, bất kể Component đó có sử dụng phần dữ liệu bị thay đổi hay không.
+
+\subsection{Sự cồng kềnh của Redux Toolkit}
+Redux giải quyết được vấn đề re-render thông qua \texttt{useSelector}, nhưng lại mang theo một lượng "Boilerplate code" (Mã lặp) khổng lồ. Để thêm một hành động đơn giản như xóa thẻ, lập trình viên phải định nghĩa Action, Reducer, Dispatcher. Điều này làm giảm tốc độ phát triển (Development Speed).
+
+\subsection{Tại sao Zustand + Immer là "Chân ái"?}
+Zustand kết hợp những ưu điểm của cả hai: Gọn nhẹ như Context API nhưng tối ưu hiệu năng render như Redux. Hơn thế nữa, khi kết hợp với \textbf{Immer} (một thư viện giúp làm việc với Immutable data một cách dễ dàng), việc cập nhật các State lồng nhau sâu (Deeply nested state) trở nên trực quan.
+\begin{lstlisting}
+// Sử dụng Zustand + Immer để cập nhật State sâu mà không cần Spread Operator phức tạp
+set(produce((draft) => {
+  const list = draft.boards[0].lists.find(l => l.id === listId);
+  list.cards.push(newCard);
+}));
+\end{lstlisting}
+Sự kết hợp này giúp mã nguồn dự án ngắn hơn khoảng 40\% so với việc dùng Redux, trong khi hiệu năng hiển thị được giữ ở mức tối đa.

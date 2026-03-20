@@ -3,6 +3,11 @@
 % ================================================================
 % File này chứa các macro tùy chỉnh và định nghĩa style cho dự án
 
+% --- CẤU HÌNH XỬ LÝ TRÀN LỀ (OVERFULL HBOX) ---
+\setlength{\emergencystretch}{3em} % Cung cấp thêm không gian co giãn để tránh từ dài bị tràn lề
+\tolerance=9999 % Chấp nhận các dòng có khoảng trắng lớn hơn bình thường
+\hbadness=9999 % Ẩn các cảnh báo underfull hbox không cần thiết
+
 % --- TRANG TRÍ TIÊU ĐỀ CHƯƠNG ---
 \titleformat{\chapter}[display]
   {\normalfont\bfseries\color{black}}

@@ -77,6 +77,48 @@ Với React, chúng ta theo triết lý \textit{State-Driven UI} (Giao diện đ
 
 \textbf{Phân tích Trade-off:} React cực kỳ phù hợp cho các Single Page App (SPA) mang tính tương tác phức tạp cao (như bảng Trello, Dashboard quản trị). Ngược lại, không nên dùng React cho các website dạng landing page tĩnh, nặng về SEO nội dung văn bản đơn thuần, vì nó sinh ra gánh nặng tải JavaScript không cần thiết ban đầu.
 
+\section{Kiến trúc React chuyên sâu: Fiber và Reconciliation}
+Để hiểu được tại sao React lại có hiệu năng ấn tượng, chúng ta cần đi sâu vào hai khái niệm cốt lõi làm nên sức mạnh của nó: Kiến trúc Fiber và thuật toán Reconciliation.
+
+\subsection{Thuật toán Reconciliation và Virtual DOM}
+Trong quá khứ, việc thao tác trực tiếp với DOM (Document Object Model) thông qua các API của trình duyệt (như \texttt{document.getElementById}) là một quá trình cực kỳ đắt đỏ về mặt hiệu năng. Mỗi lần DOM thay đổi, trình duyệt phải tính toán lại bố cục (Layout/Reflow) và vẽ lại (Repaint) toàn bộ hoặc một phần lớn trang web.
+
+React giải quyết vấn đề này bằng cách giới thiệu \textbf{Virtual DOM} - một bản sao nhẹ của DOM thực tế, được lưu trữ trong bộ nhớ (RAM). Quá trình cập nhật giao diện trong React diễn ra qua các bước sau:
+\begin{enumerate}
+    \item Khi có sự thay đổi về Trạng thái (State) hoặc Dữ liệu đầu vào (Props), React sẽ tạo ra một cây Virtual DOM mới đại diện cho giao diện mong muốn.
+    \item React sử dụng thuật toán \textbf{Reconciliation} (cụ thể là thuật toán Diffing) để so sánh cây Virtual DOM mới với cây Virtual DOM cũ trước đó. Thuật toán này có độ phức tạp thời gian là $O(n)$ (với $n$ là số lượng node trong cây), tối ưu hơn rất nhiều so với các thuật toán so sánh cây truyền thống $O(n^3)$.
+    \item Sau khi xác định được chính xác những node nào có sự thay đổi, React sẽ gộp (batch) các thay đổi này lại và áp dụng chúng lên DOM thực tế trong một lần cập nhật duy nhất. Quá trình này giúp hạn chế tối đa số lần trình duyệt phải tính toán lại bố cục, mang lại trải nghiệm mượt mà.
+\end{enumerate}
+
+\subsection{Kiến trúc React Fiber: Rendering Bất đồng bộ}
+Trước phiên bản React 16, quá trình Reconciliation là đồng bộ (Synchronous). Điều này có nghĩa là một khi React bắt đầu so sánh và cập nhật cây Virtual DOM, nó không thể bị gián đoạn. Đối với các ứng dụng lớn và phức tạp, quá trình này có thể kéo dài hơn 16 mili-giây (khoảng thời gian tối đa để đạt được 60 khung hình/giây - 60 FPS). Hậu quả là trình duyệt bị "khóa" (main thread blocked), không thể phản hồi các thao tác của người dùng như cuộn trang, nhấp chuột hay gõ phím, dẫn đến hiện tượng đơ giật (jank).
+
+Để khắc phục triệt để hạn chế này, đội ngũ kỹ sư tại Facebook đã viết lại hoàn toàn lõi của React, cho ra đời kiến trúc \textbf{React Fiber}. Fiber chia nhỏ quá trình render thành các đơn vị công việc nhỏ hơn (được gọi là các "fiber"). Nhờ đó, React có khả năng:
+\begin{itemize}
+    \item \textbf{Tạm dừng (Pause):} Ngừng công việc render hiện tại nếu có một tác vụ khác ưu tiên cao hơn (ví dụ: người dùng đang gõ phím).
+    \item \textbf{Tiếp tục (Resume):} Quay lại và hoàn thành phần công việc render đang dang dở.
+    \item \textbf{Hủy bỏ (Abort):} Loại bỏ hoàn toàn một quá trình render nếu dữ liệu đã trở nên lỗi thời trước khi quá trình render hoàn tất.
+\end{itemize}
+Kiến trúc Fiber chính là nền tảng cốt lõi cho phép các tính năng nâng cao sau này của React như Concurrent Mode và Suspense hoạt động hiệu quả.
+
+\section{Thiết kế hệ thống Frontend (Frontend System Design)}
+Bên cạnh việc nắm vững các khái niệm của React, một kỹ sư phần mềm hiện đại cần phải hiểu và lựa chọn được kiến trúc hệ thống (System Architecture) phù hợp với bài toán thực tế. Dưới đây là các mô hình kiến trúc phổ biến và lý do tại sao Single Page Application (SPA) lại là lựa chọn hoàn hảo cho dự án Trello Mini.
+
+\subsection{Server-Side Rendering (SSR) và Static Site Generation (SSG)}
+Trong những năm gần đây, sự trỗi dậy của các meta-framework như \textbf{Next.js} hay \textbf{Remix} đã mang mô hình Server-Side Rendering (SSR) trở lại mạnh mẽ.
+\begin{itemize}
+    \item \textbf{SSR:} Máy chủ sẽ thực thi mã React, render ra HTML hoàn chỉnh và gửi về cho trình duyệt. Mô hình này rất hữu ích cho các trang web yêu cầu SEO (Tối ưu hóa công cụ tìm kiếm) cao như các trang thương mại điện tử, blog, tin tức. Tuy nhiên, đánh đổi lại là chi phí vận hành máy chủ (Server Cost) cao và thời gian phản hồi ở lần tải đầu tiên (TTFB) có thể chậm hơn nếu máy chủ bị quá tải.
+    \item \textbf{SSG:} Trang web được render sẵn thành HTML tại thời điểm đóng gói (Build time) và phân phối qua CDN. Phù hợp cho các trang web có nội dung ít thay đổi (ví dụ: Landing Page, Tài liệu hướng dẫn).
+\end{itemize}
+
+\subsection{Lý do chọn Single Page Application (SPA) cho Trello Mini}
+Mặc dù SSR và SSG mang lại nhiều lợi ích về SEO và thời gian tải trang đầu tiên (FCP), dự án Trello Mini lại được xây dựng hoàn toàn theo kiến trúc \textbf{Single Page Application (SPA)} thuần túy (sử dụng Vite + React). Quyết định này được đưa ra dựa trên các đặc thù của bài toán quản lý công việc:
+\begin{enumerate}
+    \item \textbf{SEO không phải là ưu tiên:} Trello Mini là một công cụ phần mềm nội bộ (SaaS/Dashboard). Nội dung các bảng công việc là thông tin bảo mật và cá nhân, không cần thiết và cũng không được phép để các công cụ tìm kiếm (như Google Bot) lập chỉ mục (index). Do đó, lợi thế lớn nhất của SSR/SSG trở nên vô nghĩa.
+    \item \textbf{Tính tương tác cực cao (High Interactivity):} Trọng tâm của ứng dụng là thao tác kéo thả (Drag and Drop), tạo mới, chỉnh sửa và cập nhật trạng thái thẻ liên tục. Trong kiến trúc SPA, sau khi tải xong toàn bộ JavaScript tĩnh ở lần truy cập đầu tiên, mọi thao tác định tuyến (Routing) và tính toán UI đều diễn ra ngay trên thiết bị của người dùng (Client-side) mà không cần chờ đợi phản hồi từ máy chủ, mang lại trải nghiệm mượt mà gần giống với các ứng dụng Desktop native.
+    \item \textbf{Đơn giản hóa hạ tầng (Simplified Infrastructure):} Kiến trúc SPA cho phép toàn bộ ứng dụng Frontend được biên dịch thành các tệp tĩnh (HTML, CSS, JS). Nhờ đó, chúng đầu có thể dễ dàng triển khai (Deploy) ứng dụng lên bất kỳ dịch vụ CDN miễn phí nào như Vercel, Netlify hay GitHub Pages mà không cần phải thuê và quản lý máy chủ NodeJS phức tạp.
+\end{enumerate}
+
 \chapter{Cơ hội nghề nghiệp và Nhu cầu thị trường}
 
 \section{Vị trí công việc thực tế}

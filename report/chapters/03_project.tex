@@ -19,9 +19,87 @@ Hệ thống được thiết kế với các nhóm chức năng cốt lõi sau:
     \item \textbf{Nhóm tương tác Kéo Thả (Drag \& Drop):} Tính năng mang tính biểu tượng của Kanban. Người dùng có thể dùng chuột (hoặc ngón tay trên màn hình cảm ứng) nhấp giữ một Card và kéo nó thả sang một List khác để cập nhật trạng thái làm việc một cách trực quan nhất.
 \end{itemize}
 
+\section{Phân tích Feature-Sliced Design (FSD) trong thực tế}
+Kiến trúc Feature-Sliced Design (FSD) được áp dụng triệt để trong dự án Trello Mini nhằm module hóa mã nguồn, giúp hệ thống dễ bảo trì và mở rộng khi quy mô tăng lên. Cấu trúc thư mục được chia thành các lớp (layers) rõ ràng theo mức độ phụ thuộc giảm dần:
+\begin{itemize}
+    \item \textbf{app}: Chứa cấu hình khởi tạo ứng dụng, routing tổng, global styles và các providers.
+    \item \textbf{pages}: Chứa các trang chính (Login, Dashboard, BoardDetail), đóng vai trò ghép nối các features và entities lại với nhau để tạo thành góc nhìn hoàn chỉnh.
+    \item \textbf{widgets}: Các khối giao diện phức tạp, độc lập và có khả năng tái sử dụng cao (ví dụ: Sidebar, Header).
+    \item \textbf{features}: Chứa logic nghiệp vụ cụ thể mang lại giá trị cho người dùng (như tính năng kéo thả \texttt{DragAndDrop}, thêm thẻ mới \texttt{AddCardForm}).
+    \item \textbf{entities}: Định nghĩa cấu trúc dữ liệu cốt lõi (Interfaces cho Board, List, Card) và chứa Zustand store quản lý state của các thực thể này.
+    \item \textbf{shared}: Các thành phần dùng chung ở mức độ thấp nhất (UI components cơ bản như Button, Input; các hàm tiện ích utils; custom hooks).
+\end{itemize}
+
+\section{Mổ xẻ mã nguồn (Code Walkthrough)}
+
+\subsection{Khởi tạo Zustand Store với Persist Middleware}
+Việc lưu trữ dữ liệu cục bộ nhằm tránh mất mát khi tải lại trang được tự động hóa hoàn toàn thông qua \texttt{persist} middleware của Zustand. Mã nguồn được thiết kế gọn gàng, tách biệt phần khai báo logic khỏi UI:
+\begin{lstlisting}
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { produce } from 'immer';
+
+export const useBoardStore = create(
+  persist(
+    (set) => ({
+      boards: [],
+      addCard: (listId, cardData) => set(produce((draft) => {
+        // Logic tìm list và push card mới vào mảng với Immer
+        const list = draft.boards[0].lists.find(l => l.id === listId);
+        if (list) list.cards.push(cardData);
+      })),
+    }),
+    { name: 'trello-storage' } // Tự động lưu xuống LocalStorage với key này
+  )
+);
+\end{lstlisting}
+
+\subsection{Luồng xử lý Kéo Thả (Drag \& Drop)}
+Logic phức tạp nhất của dự án nằm ở việc tính toán vị trí sau khi người dùng thả thẻ. Khi sự kiện \texttt{onDragEnd} của \texttt{dnd-kit} được kích hoạt, hệ thống sẽ kiểm tra xem thẻ được thả trong cùng một cột (reorder) hay sang cột khác (move) để áp dụng thuật toán hoán đổi tương ứng:
+\begin{lstlisting}
+const handleDragEnd = (event) => {
+  const { active, over } = event;
+  if (!over) return; // Rơi ra ngoài vùng thả hợp lệ
+
+  const activeId = active.id;
+  const overId = over.id;
+
+  // Gọi action từ Zustand store để tính toán lại mảng
+  if (activeListId === overListId) {
+    reorderCardInList(activeListId, activeId, overId);
+  } else {
+    moveCardBetweenLists(activeListId, overListId, activeId, overId);
+  }
+};
+\end{lstlisting}
+
+\subsection{Tối ưu hóa UI/UX bằng Tailwind CSS}
+Để giao diện mượt mà và linh hoạt trên nhiều kích thước màn hình, Tailwind CSS được sử dụng triệt để. Các tiện ích như \texttt{flex-grow}, \texttt{overflow-y-auto} kết hợp với tùy chỉnh thanh cuộn (custom scrollbar) giúp tái tạo chính xác cảm giác cuộn mượt mà của Trello gốc:
+\begin{lstlisting}
+<div className="flex h-screen flex-col bg-blue-600">
+  <Header className="flex-shrink-0" />
+  <main className="flex-grow overflow-x-auto whitespace-nowrap p-4">
+    {/* Vùng chứa các cột List */}
+    <div className="inline-flex h-full items-start gap-4">
+      <BoardList />
+    </div>
+  </main>
+</div>
+\end{lstlisting}
+
+\section{Luồng dữ liệu (Data Flow Diagram)}
+Hệ thống quản lý trạng thái của Trello Mini tuân thủ nghiêm ngặt nguyên lý luồng dữ liệu một chiều (One-way Data Flow), đảm bảo tính dễ đoán (predictable) và dễ gỡ lỗi (debug):
+\begin{enumerate}
+    \item \textbf{Tương tác (Interaction):} Người dùng thực hiện thao tác trên giao diện (ví dụ: nhấp nút "Xóa thẻ").
+    \item \textbf{Gọi Hành động (Dispatch Action):} Event handler trên Component sẽ gọi một hàm Action được cung cấp bởi Zustand Store (VD: \texttt{deleteCard(cardId)}).
+    \item \textbf{Cập nhật Trạng thái (State Mutation):} Hàm Action sử dụng \texttt{Immer} để thay đổi một bản nháp (draft) của State, sau đó Zustand tự động hợp nhất (merge) bản nháp này thành State chính thức mới (đảm bảo tính bất biến - Immutability).
+    \item \textbf{Phản hồi Giao diện (Re-render):} Các Component đang "đăng ký" (subscribe) theo dõi phần State bị thay đổi sẽ tự động được React tính toán lại và cập nhật DOM.
+    \item \textbf{Lưu trữ ngầm (Persistence):} Ngay sau khi State thay đổi, Persist Middleware sẽ chạy ngầm để đồng bộ hóa chuỗi JSON đại diện cho cây State mới xuống LocalStorage của trình duyệt.
+\end{enumerate}
+
 \section{Kiến trúc Component (Component Tree)}
 Theo nguyên lý Feature-Sliced Design, cây Component của dự án được cấu trúc lồng nhau một cách có hệ thống, đi từ lớp tổng quát ngoài cùng (Router/Layout) vào sâu tới các thành phần hiển thị nhỏ nhất (Thẻ, Form):
-\begin{verbatim}
+\begin{lstlisting}
 App
  +- RouterProvider
     +- MainLayout
@@ -33,7 +111,7 @@ App
                 +- AddCardForm
              +- AddListForm
              +- CardModal
-\end{verbatim}
+\end{lstlisting}
 
 \chapter{Triển khai và Demo sản phẩm}
 

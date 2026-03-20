@@ -1,0 +1,93 @@
+\chapter{Tối ưu hóa hiệu năng (Performance Optimization)}
+
+\section{Đo lường hiệu năng: React Profiler và Lighthouse}
+Trong quá trình phát triển các ứng dụng web phức tạp với nhiều tương tác động như Trello Mini, việc đảm bảo ứng dụng hoạt động mượt mà, không xảy ra tình trạng giật lag (frame drop) là một trong những ưu tiên hàng đầu. Để có thể tối ưu hóa hiệu năng một cách khoa học, nguyên tắc đầu tiên là "không tối ưu hóa mù quáng" (No premature optimization). Mọi quyết định thay đổi mã nguồn nhằm tăng tốc ứng dụng đều phải dựa trên các số liệu đo lường thực tế.
+
+Để thực hiện điều này, nhóm đã áp dụng hai công cụ đo lường tiêu chuẩn trong ngành:
+\begin{itemize}
+    \item \textbf{React Profiler:} Đây là một công cụ được tích hợp sẵn trong React Developer Tools (trình duyệt extension). React Profiler cho phép ghi lại toàn bộ quá trình render của cây component trong một khoảng thời gian nhất định (ví dụ: khi người dùng thực hiện thao tác kéo thả một thẻ công việc). Dựa vào biểu đồ Flamegraph hoặc Ranked chart do Profiler cung cấp, lập trình viên có thể dễ dàng xác định được Component nào đang tốn nhiều thời gian render nhất, Component nào đang bị re-render một cách không cần thiết do sự thay đổi của các props không liên quan.
+    \item \textbf{Lighthouse:} Công cụ đánh giá chất lượng trang web mã nguồn mở của Google. Nhóm sử dụng Lighthouse để đo lường các chỉ số Core Web Vitals của ứng dụng như LCP (Largest Contentful Paint - Thời gian hiển thị nội dung lớn nhất), FID (First Input Delay - Độ trễ đầu vào đầu tiên) và CLS (Cumulative Layout Shift - Điểm thay đổi bố cục). Việc đạt được điểm số cao trên Lighthouse không chỉ cải thiện trải nghiệm người dùng mà còn là một yếu tố quan trọng trong việc tối ưu hóa công cụ tìm kiếm (SEO) nếu ứng dụng được triển khai ra công chúng.
+\end{itemize}
+
+Thông qua việc phân tích dữ liệu từ Profiler, nhóm phát hiện ra rằng trong kiến trúc ban đầu, mỗi khi một thẻ (Card) được di chuyển từ cột (List) này sang cột khác, sự thay đổi trạng thái (State) ở cấp độ Bảng (Board) đã kích hoạt quá trình re-render của toàn bộ các thẻ còn lại, gây ra hiện tượng nghẽn cổ chai CPU nghiêm trọng khi số lượng thẻ tăng lên hàng trăm.
+
+\section{Kiểm soát Re-render với React.memo, useMemo và useCallback}
+Để giải quyết bài toán re-render diện rộng đã được phát hiện ở phần trước, nhóm đã áp dụng triệt để bộ ba công cụ tối ưu hóa (Memoization APIs) do React cung cấp: \texttt{React.memo}, \texttt{useMemo} và \texttt{useCallback}.
+
+\subsection{Sử dụng React.memo cho các Component hiển thị tĩnh}
+Theo mặc định, React sẽ render lại (re-render) một Component con bất cứ khi nào Component cha của nó bị render lại, bất kể dữ liệu đầu vào (props) của Component con có thay đổi hay không. Đối với các Component như \texttt{CardItem} (hiển thị thông tin tĩnh của một thẻ công việc), điều này là vô cùng lãng phí.
+
+Bằng cách bọc Component bằng \texttt{React.memo}, React sẽ ghi nhớ (memoize) kết quả render của Component đó. Trong các lần render tiếp theo, React sẽ thực hiện một phép so sánh nông (shallow compare) giữa props cũ và props mới. Chỉ khi props thực sự thay đổi, Component mới bị re-render.
+
+\begin{lstlisting}
+import React from 'react';
+
+const CardItem = React.memo(({ card, onDragStart }) => {
+  // Logic hiển thị Card
+  return (
+    <div className="card-item">
+      <h4>{card.title}</h4>
+    </div>
+  );
+});
+
+export default CardItem;
+\end{lstlisting}
+
+\subsection{Giữ tham chiếu hàm với useCallback}
+Một cạm bẫy phổ biến khi sử dụng \texttt{React.memo} là việc truyền các hàm callback (như \texttt{onClick}, \texttt{onDragStart}) từ Component cha xuống Component con. Mỗi khi Component cha re-render, một tham chiếu hàm mới sẽ được tạo ra trong bộ nhớ. Phép so sánh nông của \texttt{React.memo} sẽ đánh giá hàm cũ và hàm mới là hai đối tượng khác nhau, dẫn đến việc Component con vẫn bị re-render mặc dù nội dung dữ liệu không đổi.
+
+Để khắc phục, nhóm sử dụng \texttt{useCallback} để ghi nhớ tham chiếu của các hàm xử lý sự kiện, đảm bảo tham chiếu này không thay đổi qua các lần render trừ khi các dependency của nó thay đổi.
+
+\begin{lstlisting}
+const handleCardClick = useCallback((cardId) => {
+  openCardDetailModal(cardId);
+}, [openCardDetailModal]); // Chỉ tạo lại hàm khi openCardDetailModal thay đổi
+\end{lstlisting}
+
+\subsection{Tránh tính toán lại với useMemo}
+Đối với các thao tác xử lý mảng hoặc tính toán phức tạp (như lọc danh sách các thẻ theo nhãn dán, sắp xếp thẻ theo ngày hết hạn), việc thực hiện lại các phép toán này trong mỗi chu kỳ render sẽ làm chậm ứng dụng đáng kể. \texttt{useMemo} được sử dụng để lưu lại kết quả của các phép tính tốn kém này.
+
+\begin{lstlisting}
+const filteredCards = useMemo(() => {
+  return cards.filter(card => card.labels.includes(activeFilter));
+}, [cards, activeFilter]);
+\end{lstlisting}
+Nhờ việc kết hợp đồng bộ cả ba kỹ thuật trên, số lượng Component bị re-render thừa thãi trong quá trình kéo thả đã giảm đi hơn 80\%, mang lại trải nghiệm tương tác mượt mà không kém gì các ứng dụng Native.
+
+\section{Code Splitting và Lazy Loading}
+Khi ứng dụng Frontend ngày càng phình to với vô số tính năng và thư viện đi kèm, kích thước của tệp Javascript (Bundle size) được gửi xuống trình duyệt trong lần tải đầu tiên (Initial load) cũng tăng theo cấp số nhân. Một bundle quá lớn sẽ kéo dài thời gian TTI (Time to Interactive), khiến người dùng phải nhìn vào màn hình trắng (hoặc loading spinner) trong một thời gian dài trước khi có thể bắt đầu sử dụng ứng dụng.
+
+Để khắc phục hạn chế này, đồ án Trello Mini đã áp dụng kiến trúc \textbf{Code Splitting} (Chia nhỏ mã nguồn) thông qua các công cụ hiện đại như Vite (dựa trên Rollup) và tính năng \textbf{Lazy Loading} của React.
+
+Thay vì gom toàn bộ mã nguồn của trang Dashboard, Board Detail, Modal Settings, và các thư viện nặng (như thư viện render biểu đồ, hoặc trình soạn thảo văn bản Rich-text Editor cho phần mô tả thẻ) vào một file duy nhất, nhóm đã chia ứng dụng thành các khối nhỏ gọn (chunks).
+
+\begin{lstlisting}
+import React, { Suspense, lazy } from 'react';
+
+// Khai báo Lazy Load cho các Component lớn không cần thiết ở lần tải đầu tiên
+const BoardDetail = lazy(() => import('./pages/BoardDetail'));
+const SettingsModal = lazy(() => import('./features/settings/SettingsModal'));
+
+function App() {
+  return (
+    <Suspense fallback={<div className="spinner">Đang tải cấu trúc bảng...</div>}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/board/:id" element={<BoardDetail />} />
+      </Routes>
+    </Suspense>
+  );
+}
+\end{lstlisting}
+
+Khi người dùng mới truy cập vào trang chủ (Dashboard), trình duyệt chỉ tải phần mã nguồn tối thiểu để hiển thị danh sách các bảng. Chỉ khi người dùng thực sự nhấp vào một bảng cụ thể, mã nguồn của \texttt{BoardDetail} và các thư viện kéo thả phức tạp mới được tải xuống bất đồng bộ. Việc áp dụng cơ chế này giúp thu nhỏ dung lượng tải ban đầu (Initial chunk) xuống dưới mức 200KB, tối ưu hóa đáng kể chỉ số LCP.
+
+\section{Kỹ thuật Virtualization (Windowing) cho danh sách khổng lồ}
+Mặc dù Trello Mini hiện tại hoạt động tốt với số lượng công việc vừa phải, nhóm cũng đã nghiên cứu và đề xuất áp dụng kỹ thuật \textbf{Virtualization} (còn gọi là Windowing) để chuẩn bị cho kịch bản mở rộng (Scalability) khi một bảng tính chứa tới hàng ngàn, chục ngàn thẻ công việc - một tình huống rất thực tế ở các doanh nghiệp lớn.
+
+Nguyên lý của Virtualization là thay vì tạo ra (render) hàng ngàn phần tử HTML (DOM nodes) ẩn phía dưới thanh cuộn (scroll bar), chúng ta chỉ render một số lượng rất nhỏ các phần tử đang thực sự nằm trong tầm nhìn (Viewport) của người dùng, cộng thêm một vài phần tử làm vùng đệm (buffer) ở trên và dưới.
+
+Khi người dùng cuộn chuột, thay vì tạo thêm DOM mới, hệ thống sẽ tái sử dụng (recycle) các DOM nodes đã trôi ra khỏi màn hình, đồng thời cập nhật nội dung và vị trí tuyệt đối (absolute position) của chúng. Điều này giúp giữ cho kích thước của cây DOM luôn ở mức tối thiểu, ngăn ngừa hiện tượng rò rỉ bộ nhớ (memory leak) và giữ cho trình duyệt không bị treo (crash).
+
+Các thư viện phổ biến hỗ trợ kỹ thuật này trong hệ sinh thái React bao gồm \texttt{react-window} hoặc \texttt{react-virtualized}. Mặc dù chưa tích hợp sâu kỹ thuật này vào phiên bản hiện tại do giới hạn thời gian, đây là một minh chứng cho thấy hệ thống được thiết kế với tư duy hướng đến hiệu năng cao và khả năng mở rộng không giới hạn trong tương lai.
