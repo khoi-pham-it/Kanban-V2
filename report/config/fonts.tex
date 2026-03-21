@@ -27,8 +27,15 @@
     Path=/home/kiet/.local/share/fonts/Open_Sans/static/
 ]
 
-% Nếu không có CaskaydiaCove, dùng FreeMono làm fallback
-\setmonofont{FreeMono}    % Font đơn cách (monospace)
+% Sử dụng JetBrains Mono cho các khối code (tốt cho tiếng Việt)
+\setmonofont{JetBrainsMono-Regular.ttf}[
+    Scale=0.9,
+    Path=/usr/share/fonts/TTF/,
+    BoldFont=JetBrainsMono-Bold.ttf,
+    ItalicFont=JetBrainsMono-Italic.ttf,
+    BoldItalicFont=JetBrainsMono-BoldItalic.ttf,
+    RawFeature={+ccmp,+locl,+mark,+mkmk}
+]
 
 % --- Điều chỉnh kích thước font ---
 \usepackage{anyfontsize}

@@ -12,12 +12,12 @@
 
 \section{Cài đặt, Khởi tạo và Cấu hình TypeScript}
 Quy trình khởi tạo dự án với Vite được thực hiện nhanh gọn qua dòng lệnh CLI:
-\begin{lstlisting}
+\begin{Verbatim}
 npm create vite@latest baby-trello -- --template react-ts
 cd baby-trello
 npm install
 npm run dev
-\end{lstlisting}
+\end{Verbatim}
 Sự khác biệt cốt lõi nhất ở đây là hậu tố \texttt{react-ts}. Thay vì sử dụng JavaScript truyền thống với đặc tính kiểu động (Dynamic Typing) dễ dãi và tiềm ẩn nhiều lỗi \textit{runtime error}, dự án áp dụng \textbf{TypeScript}. TypeScript đóng vai trò như một lớp bảo vệ nghiêm ngặt:
 \begin{itemize}
     \item Cung cấp hệ thống kiểm tra kiểu tĩnh (Static Typing), giúp phát hiện lỗi sai ngay trong quá trình gõ code (Compile-time) thay vì đợi đến lúc chạy thử.
@@ -87,19 +87,19 @@ Chỉ với vài dòng cấu hình, mọi thay đổi trong \texttt{useBoardStor
 Một điểm yếu chết người của React là cơ chế Re-render: Khi Component cha thay đổi trạng thái, toàn bộ Component con sẽ bị render lại một cách mù quáng. Đối với ứng dụng Kanban, việc kéo một TaskCard di chuyển từng pixel có thể phát sinh hàng trăm lần thay đổi trạng thái mỗi giây. Nếu không tối ưu, giao diện sẽ bị đơ (lag).
 
 Nhờ kiến trúc của Zustand, nhóm đã giải quyết triệt để vấn đề này bằng kỹ thuật \textbf{Atomic Selectors}. Thay vì import toàn bộ đối tượng State khổng lồ vào Component:
-\begin{lstlisting}
+\begin{Verbatim}
 // Cách làm sai (Gây re-render liên tục)
 const { boards } = useBoardStore();
-\end{lstlisting}
+\end{Verbatim}
 
 Lập trình viên được ép buộc phải chỉ định (select) chính xác mảng dữ liệu mà Component đó quan tâm:
-\begin{lstlisting}
+\begin{Verbatim}
 // Cách làm đúng chuẩn tối ưu hiệu năng
 const list = useBoardStore((state) =>
   state.boards.find(b => b.id === boardId)
        .lists.find(l => l.id === listId)
 );
-\end{lstlisting}
+\end{Verbatim}
 Nhờ vậy, khi Thẻ A cập nhật nội dung, Zustand sẽ thông minh đối chiếu và \textit{chỉ render duy nhất Thẻ A}, hoàn toàn bỏ qua hàng ngàn Component Thẻ B, Thẻ C đang nằm cùng trên màn hình. Kỹ thuật này giúp ứng dụng đạt chỉ số 60 FPS (Frames Per Second) mượt mà ngay cả khi chạy trên trình duyệt của thiết bị di động yếu.
 
 \section{Design Patterns trong React và Sự chuyển dịch sang Custom Hooks}
@@ -142,11 +142,11 @@ Redux giải quyết được vấn đề re-render thông qua \texttt{useSelect
 
 \subsection{Tại sao Zustand + Immer là "Chân ái"?}
 Zustand kết hợp những ưu điểm của cả hai: Gọn nhẹ như Context API nhưng tối ưu hiệu năng render như Redux. Hơn thế nữa, khi kết hợp với \textbf{Immer} (một thư viện giúp làm việc với Immutable data một cách dễ dàng), việc cập nhật các State lồng nhau sâu (Deeply nested state) trở nên trực quan.
-\begin{lstlisting}
+\begin{Verbatim}
 // Sử dụng Zustand + Immer để cập nhật State sâu mà không cần Spread Operator phức tạp
 set(produce((draft) => {
   const list = draft.boards[0].lists.find(l => l.id === listId);
   list.cards.push(newCard);
 }));
-\end{lstlisting}
+\end{Verbatim}
 Sự kết hợp này giúp mã nguồn dự án ngắn hơn khoảng 40\% so với việc dùng Redux, trong khi hiệu năng hiển thị được giữ ở mức tối đa.

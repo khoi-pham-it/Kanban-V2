@@ -35,16 +35,17 @@ Do thời gian và nguồn lực có hạn, dự án Trello Mini được giới
 \section{Kế hoạch và Tiến độ thực hiện (Timeline)}
 Để đảm bảo tiến độ và chất lượng của đồ án, nhóm đã thống nhất chia quá trình phát triển thành 4 giai đoạn chính, được mô tả chi tiết trong bảng dưới đây:
 
-\begin{table}[H]
+\begin{table}[!ht]
     \centering
-    \begin{tabular}{|l|l|p{4.5cm}|l|p{3.5cm}|}
+    \small
+    \begin{tabularx}{\textwidth}{|l|l|>{\raggedright\arraybackslash}X|l|>{\raggedright\arraybackslash}X|}
     \hline
     \textbf{Giai đoạn} & \textbf{Thời gian} & \textbf{Nội dung công việc chính} & \textbf{Người phụ trách} & \textbf{Mục tiêu đầu ra} \\ \hline
     1. Nghiên cứu & Tuần 1-2 & Tìm hiểu tài liệu React, Vite, Tailwind CSS. Thiết kế cấu trúc thư mục theo chuẩn FSD, định nghĩa TypeScript Interfaces. & Cả nhóm & Cài đặt xong IDE, khởi tạo project cơ bản (Hello World). \\ \hline
     2. Thực hành UI & Tuần 3-5 & Dựng Layout tĩnh, xây dựng các component hiển thị: Board, List, Card, Modal, Input Forms. & Cả nhóm & Giao diện (UI) tĩnh hoàn chỉnh, khớp với thiết kế. \\ \hline
     3. Tích hợp Logic& Tuần 6-8 & Thiết lập Zustand Store, Immer. Áp dụng Slice pattern. Tích hợp thư viện \texttt{dnd-kit} xử lý Kéo Thả. & Leader & Ứng dụng hoạt động với dữ liệu thực, kéo thả thành công. \\ \hline
     4. Hoàn thiện & Tuần 9 & Cấu hình Zustand Persist Middleware, kiểm thử và vá lỗi (Fix bugs). Viết tài liệu báo cáo và chuẩn bị slide thuyết trình. & Cả nhóm & Báo cáo hoàn chỉnh + Mã nguồn hoạt động ổn định. \\ \hline
-    \end{tabular}
+    \end{tabularx}
     \caption{Kế hoạch triển khai dự án Trello Mini}
 \end{table}
 

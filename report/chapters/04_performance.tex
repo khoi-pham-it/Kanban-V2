@@ -19,7 +19,7 @@ Theo mặc định, React sẽ render lại (re-render) một Component con bấ
 
 Bằng cách bọc Component bằng \texttt{React.memo}, React sẽ ghi nhớ (memoize) kết quả render của Component đó. Trong các lần render tiếp theo, React sẽ thực hiện một phép so sánh nông (shallow compare) giữa props cũ và props mới. Chỉ khi props thực sự thay đổi, Component mới bị re-render.
 
-\begin{lstlisting}
+\begin{Verbatim}
 import React from 'react';
 
 const CardItem = React.memo(({ card, onDragStart }) => {
@@ -32,27 +32,27 @@ const CardItem = React.memo(({ card, onDragStart }) => {
 });
 
 export default CardItem;
-\end{lstlisting}
+\end{Verbatim}
 
 \subsection{Giữ tham chiếu hàm với useCallback}
 Một cạm bẫy phổ biến khi sử dụng \texttt{React.memo} là việc truyền các hàm callback (như \texttt{onClick}, \texttt{onDragStart}) từ Component cha xuống Component con. Mỗi khi Component cha re-render, một tham chiếu hàm mới sẽ được tạo ra trong bộ nhớ. Phép so sánh nông của \texttt{React.memo} sẽ đánh giá hàm cũ và hàm mới là hai đối tượng khác nhau, dẫn đến việc Component con vẫn bị re-render mặc dù nội dung dữ liệu không đổi.
 
 Để khắc phục, nhóm sử dụng \texttt{useCallback} để ghi nhớ tham chiếu của các hàm xử lý sự kiện, đảm bảo tham chiếu này không thay đổi qua các lần render trừ khi các dependency của nó thay đổi.
 
-\begin{lstlisting}
+\begin{Verbatim}
 const handleCardClick = useCallback((cardId) => {
   openCardDetailModal(cardId);
 }, [openCardDetailModal]); // Chỉ tạo lại hàm khi openCardDetailModal thay đổi
-\end{lstlisting}
+\end{Verbatim}
 
 \subsection{Tránh tính toán lại với useMemo}
 Đối với các thao tác xử lý mảng hoặc tính toán phức tạp (như lọc danh sách các thẻ theo nhãn dán, sắp xếp thẻ theo ngày hết hạn), việc thực hiện lại các phép toán này trong mỗi chu kỳ render sẽ làm chậm ứng dụng đáng kể. \texttt{useMemo} được sử dụng để lưu lại kết quả của các phép tính tốn kém này.
 
-\begin{lstlisting}
+\begin{Verbatim}
 const filteredCards = useMemo(() => {
   return cards.filter(card => card.labels.includes(activeFilter));
 }, [cards, activeFilter]);
-\end{lstlisting}
+\end{Verbatim}
 Nhờ việc kết hợp đồng bộ cả ba kỹ thuật trên, số lượng Component bị re-render thừa thãi trong quá trình kéo thả đã giảm đi hơn 80\%, mang lại trải nghiệm tương tác mượt mà không kém gì các ứng dụng Native.
 
 \section{Code Splitting và Lazy Loading}
@@ -62,7 +62,7 @@ Khi ứng dụng Frontend ngày càng phình to với vô số tính năng và t
 
 Thay vì gom toàn bộ mã nguồn của trang Dashboard, Board Detail, Modal Settings, và các thư viện nặng (như thư viện render biểu đồ, hoặc trình soạn thảo văn bản Rich-text Editor cho phần mô tả thẻ) vào một file duy nhất, nhóm đã chia ứng dụng thành các khối nhỏ gọn (chunks).
 
-\begin{lstlisting}
+\begin{Verbatim}
 import React, { Suspense, lazy } from 'react';
 
 // Khai báo Lazy Load cho các Component lớn không cần thiết ở lần tải đầu tiên
@@ -79,7 +79,7 @@ function App() {
     </Suspense>
   );
 }
-\end{lstlisting}
+\end{Verbatim}
 
 Khi người dùng mới truy cập vào trang chủ (Dashboard), trình duyệt chỉ tải phần mã nguồn tối thiểu để hiển thị danh sách các bảng. Chỉ khi người dùng thực sự nhấp vào một bảng cụ thể, mã nguồn của \texttt{BoardDetail} và các thư viện kéo thả phức tạp mới được tải xuống bất đồng bộ. Việc áp dụng cơ chế này giúp thu nhỏ dung lượng tải ban đầu (Initial chunk) xuống dưới mức 200KB, tối ưu hóa đáng kể chỉ số LCP.
 
