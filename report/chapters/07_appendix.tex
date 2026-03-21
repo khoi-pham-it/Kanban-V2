@@ -18,53 +18,59 @@
 
 \chapter{Nhật ký công việc (Weekly Log Summary)}
 
-\section*{Tuần 1: Khởi động và Nghiên cứu}
+\section*{Tuần 1: Khởi động và Thiết kế Hệ thống}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Tìm hiểu quy trình làm việc của Trello, khởi tạo dự án với Vite và ReactJS. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Nghiên cứu các thư viện hỗ trợ: TailwindCSS để làm giao diện và Lucide React cho icon. -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Tìm hiểu về cấu trúc dữ liệu JSON để lưu trữ Board, List và Card. -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Khởi tạo dự án với Vite/React, thiết lập quy chuẩn TypeScript và nghiên cứu luồng nghiệp vụ Trello. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Cấu hình Tailwind CSS, xây dựng bộ màu thương hiệu và hệ thống Icon (Lucide React). -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Thiết kế mô hình dữ liệu (JSON Schema) cho Board, List, Card đảm bảo khả năng mở rộng. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Tuần 2: Kiến trúc ứng dụng và Routing}
+\section*{Tuần 2: Kiến trúc FSD và Quản lý State}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Thiết lập React Router, tạo các trang trống cho Login, Dashboard và Board Detail. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Xây dựng Layout chung cho ứng dụng (Navbar, Sidebar cơ bản) và thiết lập cấu trúc Feature-Sliced Design. -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Thiết lập Zustand Store cơ bản để chuẩn bị quản lý Global State. -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Thiết lập cấu trúc thư mục chuẩn Feature-Sliced Design (FSD), cài đặt App Layer và Router. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Xây dựng các Shared UI Components (Button, Input, Modal base) dùng chung cho toàn hệ thống. -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Khởi tạo Zustand Store, cấu hình Persist Middleware để lưu trữ dữ liệu bền vững. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Tuần 3: Authentication và Bảo mật}
+\section*{Tuần 3: Authentication và Layout}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Cấu hình Zustand Slice để quản lý trạng thái đăng nhập và thông tin phiên làm việc. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Thiết kế giao diện trang Login trang trọng và trực quan. -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Xử lý logic Protected Routes (Chặn truy cập khi chưa đăng nhập). -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Triển khai Feature Auth (Fake Login logic) và quản lý phiên làm việc trong Store. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Xây dựng hệ thống Layout (Header, Sidebar) và định hướng điều hướng ứng dụng. -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Xử lý cơ chế Protected Routes để bảo vệ dữ liệu người dùng. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Tuần 4: Quản lý Board và Dashboard}
+\section*{Tuần 4: Dashboard và Board Entities}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Xây dựng trang Dashboard hiển thị danh sách các Board hiện có. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Thêm chức năng tạo mới Board và xóa Board khỏi danh sách. -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Viết Zustand \texttt{boardSlice} để xử lý logic lưu trữ Board vào Global State. -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Phát triển trang Dashboard hiển thị danh sách dự án (Board Listing). -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Thực hiện logic tạo mới và xóa Board, kết nối trực tiếp với Global Store. -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Xây dựng Board Slices trong Zustand, xử lý các thao tác CRUD cơ bản cho thực thể Board. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Tuần 5: Thành phần tĩnh của Board}
+\section*{Tuần 5: UI Wiring và Form Logic}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Thiết kế giao diện tĩnh cho Column (List) và Card bên trong Board. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Xây dựng form thêm nhanh List mới và Card mới. -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Xử lý logic hiển thị dữ liệu từ State lên giao diện Board Detail. -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Tái cấu trúc trang BoardDetail để tương thích hoàn toàn với các Layer của FSD. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Hoàn thiện \texttt{AddCardForm} và \texttt{AddListForm} với trạng thái \texttt{isEditing} và xử lý sự kiện \texttt{onBlur/Esc}. -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Kết nối dữ liệu từ Store vào giao diện Board bằng Atomic Selectors để tối ưu re-render. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Tuần 6: Hoàn thiện UI và Cấu trúc Component}
+\section*{Tuần 6: Modal Chi tiết và Nghiên cứu DnD}
 \begin{itemize}
-    \item \textbf{Mai Trần Tuấn Kiệt:} Tách các component lớn (\texttt{Dashboard}, \texttt{BoardDetail}) thành các component nhỏ hơn (\texttt{BoardCard}, \texttt{List}, \texttt{TaskCard}) để tối ưu tái sử dụng. -- \textit{Hoàn thành}
-    \item \textbf{Vũ Lê Đức Anh:} Xây dựng \texttt{CardModal} để hiển thị chi tiết thẻ (nhãn, ngày hết hạn, mô tả). -- \textit{Hoàn thành}
-    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Loại bỏ các thành phần UI thừa, viết tài liệu hướng dẫn nội bộ (\texttt{docs}) để chuẩn bị tích hợp logic kéo thả. -- \textit{Hoàn thành}
+    \item \textbf{Mai Trần Tuấn Kiệt:} Đưa ra chiến lược tối ưu hiệu năng (React.memo, useCallback) và kiểm tra rò rỉ bộ nhớ. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Phát triển \texttt{CardModal} đầy đủ tính năng: chỉnh sửa tiêu đề, mô tả Markdown và quản lý Nhãn dán (Labels). -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Thiết lập \texttt{DndContext}, cấu hình các Sensors (Pointer, Keyboard) và xây dựng khung kéo thả cơ bản. -- \textit{Hoàn thành}
 \end{itemize}
 
-\section*{Dự kiến tuần 7 - 9:}
+\section*{Tuần 7: Hiện thực hóa Kéo Thả (Drag and Drop)}
 \begin{itemize}
-    \item \textbf{Tuần 7:} Tích hợp thư viện \texttt{dnd-kit} để xử lý kéo thả Card và List.
-    \item \textbf{Tuần 8:} Cài đặt Local Storage để lưu dữ liệu bền vững và tối ưu hóa hiệu năng.
-    \item \textbf{Tuần 9:} Kiểm thử hệ thống, sửa lỗi và hoàn thiện báo cáo toàn văn.
+    \item \textbf{Mai Trần Tuấn Kiệt:} Đánh giá tính toàn vẹn của State khi cập nhật sâu (Immer) và đồng bộ Local Storage. -- \textit{Hoàn thành}
+    \item \textbf{Vũ Lê Đức Anh:} Tích hợp \texttt{useSortable} vào List và TaskCard, xử lý giao diện kéo thả (Attributes, Listeners). -- \textit{Hoàn thành}
+    \item \textbf{Phạm Nguyễn Nguyên Khôi:} Triển khai logic \texttt{onDragOver} và \texttt{onDragEnd}, xử lý di chuyển thẻ giữa các cột khác nhau. -- \textit{Hoàn thành}
+\end{itemize}
+
+\section*{Dự kiến tuần 8 - 9:}
+\begin{itemize}
+    \item \textbf{Tuần 8:} Hoàn thiện Optimistic UI, thêm thông báo (Toasts) và hiệu ứng chuyển cảnh mượt mà.
+    \item \textbf{Tuần 9:} Kiểm thử tổng thể (Unit/E2E), sửa lỗi và hoàn thiện báo cáo cuối cùng.
 \end{itemize}
 
 \chapter{Minh chứng làm việc nhóm (Git History)}
