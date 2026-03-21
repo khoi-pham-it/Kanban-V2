@@ -7,146 +7,162 @@
 \begin{itemize}
     \item \textbf{Môi trường Runtime (Runtime Environment):} Node.js phiên bản LTS (Long Term Support) v20+. Node.js không chỉ là môi trường thực thi mà còn cung cấp \texttt{npm} (Node Package Manager), công cụ cốt lõi giúp quản lý, cài đặt và theo dõi các thư viện phụ thuộc (dependencies) trong suốt vòng đời của dự án.
     \item \textbf{Môi trường lập trình (IDE):} Visual Studio Code (VSCode). Đây là sự lựa chọn số một của các lập trình viên Web nhờ dung lượng nhẹ, hiệu năng cao và hệ sinh thái Extensions khổng lồ. Nhóm đã cấu hình sẵn một bộ quy chuẩn cho VSCode bao gồm: \textit{ESLint} (kiểm tra các lỗi cú pháp và logic mã nguồn), \textit{Prettier} (đảm bảo format code đồng nhất cho mọi thành viên), và \textit{Tailwind CSS IntelliSense} (hỗ trợ tự động gợi ý class CSS, tăng tốc độ cắt HTML/CSS lên 300\%).
-    \item \textbf{Công cụ đóng gói siêu tốc (Next-generation Build Tool):} \textbf{Vite}. Khác với \texttt{Create React App (CRA)} dựa trên Webpack vốn đã lỗi thời và chậm chạp, Vite đại diện cho thế hệ công cụ mới. Vite tận dụng tối đa tính năng Native ESM của trình duyệt và sử dụng \texttt{esbuild} (một trình biên dịch được viết bằng ngôn ngữ Go) để \textit{pre-bundle} các thư viện. Điều này giúp thời gian khởi động server phát triển (dev server) gần như ngay lập tức (dưới 500ms) và thời gian phản hồi cập nhật code lên màn hình (HMR - Hot Module Replacement) diễn ra chớp nhoáng, tối ưu hóa tối đa trải nghiệm lập trình (Developer Experience - DX).
 \end{itemize}
 
-\section{Cài đặt, Khởi tạo và Cấu hình TypeScript}
-Quy trình khởi tạo dự án với Vite được thực hiện nhanh gọn qua dòng lệnh CLI:
+\section{Kiến trúc Siêu tốc của Vite: Deep Dive}
+Thay vì sử dụng các công cụ đóng gói truyền thống như Webpack vốn đã trở nên già cỗi và chậm chạp, dự án lựa chọn \textbf{Vite}. Để hiểu tại sao Vite lại là "kẻ thay đổi cuộc chơi", ta cần đi sâu vào kiến trúc bên trong của nó.
+
+\subsection{ESBuild vs Rollup: Sự kết hợp hoàn hảo}
+Vite sử dụng hai trình đóng gói khác nhau cho hai mục đích khác nhau, tối ưu hóa cả quá trình phát triển lẫn sản phẩm đầu ra:
+\begin{itemize}
+    \item \textbf{Development (ESBuild):} Trong quá trình phát triển, Vite sử dụng \texttt{esbuild} để pre-bundle các thư viện phụ thuộc (dependencies). \texttt{esbuild} được viết bằng Go và có tốc độ nhanh hơn từ 10 đến 100 lần so với các công cụ dựa trên JavaScript. Nó tận dụng tối đa đa luồng (multi-threading) của CPU, giúp server khởi động gần như tức thì ngay cả với hàng trăm dependency.
+    \item \textbf{Production (Rollup):} Đối với bản build cuối cùng, Vite tin dùng \texttt{Rollup}. Mặc dù chậm hơn ESBuild, Rollup cung cấp khả năng tối ưu hóa mã nguồn cực cao như:
+    \begin{itemize}
+        \item \textit{Tree-shaking:} Loại bỏ các đoạn code không bao giờ được dùng đến (dead code).
+        \item \textit{Scope Hoisting:} Gộp các module lại để giảm kích thước file và tăng tốc độ thực thi.
+        \item \textit{Advanced Chunking:} Chia nhỏ file thông minh để tận dụng cơ chế cache của trình duyệt.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Native ESM: Giải mã sự khác biệt với Webpack}
+Webpack hoạt động theo cơ chế "Bundle-based": Nó phải quét toàn bộ ứng dụng, xây dựng cây phụ thuộc (Dependency Graph) và đóng gói tất cả thành một file khổng lồ (bundle) trước khi có thể hiển thị trang web. Khi dự án lớn lên, thời gian đợi chờ này tăng theo cấp số nhân ($O(n)$).
+
+Vite giải quyết bài toán này bằng cách sử dụng \textbf{Native ESM (ES Modules)} của trình duyệt. Thay vì đóng gói, Vite chỉ đơn giản là phục vụ các file nguồn theo yêu cầu của trình duyệt. 
+\begin{enumerate}
+    \item Trình duyệt gặp lệnh \texttt{import}.
+    \item Trình duyệt gửi một request HTTP đến server của Vite.
+    \item Vite nhận request, biên dịch đúng file đó sang JavaScript tương thích (nếu cần) và gửi lại.
+\end{enumerate}
+Nhờ đó, tốc độ khởi động của Vite là hằng số ($O(1)$), không phụ thuộc vào độ lớn của dự án.
+
+\subsection{Hot Module Replacement (HMR) và Hiệu quả lập trình}
+Vite thực hiện HMR qua Native ESM một cách cực kỳ tinh tế. Khi một file thay đổi, Vite chỉ vô hiệu hóa module đó và các module liên quan trực tiếp. Trình duyệt chỉ cần tải lại đúng file đó mà không mất đi trạng thái (state) hiện tại của ứng dụng. Điều này giúp lập trình viên thấy ngay kết quả thay đổi sau khi nhấn Ctrl+S chỉ trong vài mili giây.
+
+\section{Kiến trúc mã nguồn Feature-Sliced Design (FSD)}
+Dự án áp dụng \textbf{Feature-Sliced Design (FSD)} để giải quyết bài toán bảo trì lâu dài. FSD không chỉ là cách đặt tên thư mục, nó là một tư duy phân cấp logic:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Layer} & \textbf{Trách nhiệm} & \textbf{Ví dụ trong dự án} \\ \hline
+App & Cấu hình toàn cục & \texttt{router.tsx}, \texttt{main.tsx} \\ \hline
+Pages & Giao diện các trang & \texttt{DashboardPage}, \texttt{BoardPage} \\ \hline
+Features & Logic nghiệp vụ & \texttt{AddCardForm}, \texttt{DeleteBoardButton} \\ \hline
+Entities & Logic dữ liệu & \texttt{useBoardStore}, \texttt{ICard interface} \\ \hline
+Shared & Thành phần dùng chung & \texttt{Button.tsx}, \texttt{api.ts} \\ \hline
+\end{tabular}
+\caption{Phân tầng kiến trúc FSD trong Trello Mini}
+\end{table}
+
+\chapter{Hệ thống Type tiên tiến với TypeScript}
+
+\section{Generics: Tái sử dụng mã nguồn an toàn}
+Generics là tính năng quan trọng nhất để tạo ra các component và hàm linh hoạt. Trong ứng dụng Kanban, chúng ta thường xuyên phải xử lý các danh sách (Bảng, Cột, Thẻ).
+
 \begin{Verbatim}
-npm create vite@latest baby-trello -- --template react-ts
-cd baby-trello
-npm install
-npm run dev
+// Interface cho một API Response chung
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message: string;
+}
+
+// Cách dùng:
+const boardResponse: ApiResponse<IBoard> = { ... };
+const cardsResponse: ApiResponse<ICard[]> = { ... };
 \end{Verbatim}
-Sự khác biệt cốt lõi nhất ở đây là hậu tố \texttt{react-ts}. Thay vì sử dụng JavaScript truyền thống với đặc tính kiểu động (Dynamic Typing) dễ dãi và tiềm ẩn nhiều lỗi \textit{runtime error}, dự án áp dụng \textbf{TypeScript}. TypeScript đóng vai trò như một lớp bảo vệ nghiêm ngặt:
+Việc sử dụng \texttt{<T>} giúp chúng ta định nghĩa cấu trúc dữ liệu một lần và sử dụng cho nhiều loại thực thể khác nhau mà vẫn giữ được sự kiểm soát chặt chẽ của TypeScript.
+
+\section{Utility Types: Biến đổi linh hoạt}
 \begin{itemize}
-    \item Cung cấp hệ thống kiểm tra kiểu tĩnh (Static Typing), giúp phát hiện lỗi sai ngay trong quá trình gõ code (Compile-time) thay vì đợi đến lúc chạy thử.
-    \item Định nghĩa rõ ràng các Interface và Type cho toàn bộ ứng dụng (Ví dụ: Interface \texttt{IBoard} bắt buộc phải có \texttt{id}, \texttt{title} và một mảng \texttt{lists}). Điều này hạn chế tối đa lỗi nổi tiếng "Cannot read properties of undefined" thường xuyên xảy ra trong ứng dụng Kanban khi xử lý logic mảng lồng nhau.
-    \item Giúp tính năng tự động gợi ý (IntelliSense) của VSCode hoạt động hoàn hảo, hỗ trợ lập trình viên thao tác với dữ liệu mà không cần phải nhớ thuộc tính của object.
+    \item \textbf{Partial<T>}: Cực kỳ hữu ích trong các form cập nhật. Khi người dùng chỉ muốn sửa tên thẻ, chúng ta truyền một \texttt{Partial<ICard>} vào store thay vì bắt buộc phải truyền toàn bộ đối tượng.
+    \item \textbf{Required<T>}: Ngược lại với Partial, bắt buộc tất cả thuộc tính phải có giá trị.
+    \item \textbf{Readonly<T>}: Ngăn chặn việc thay đổi dữ liệu trực tiếp, ép buộc lập trình viên phải sử dụng các hàm cập nhật state của Zustand (tuân thủ nguyên tắc Immutability).
 \end{itemize}
 
-\section{Kiến trúc mã nguồn theo chuẩn Feature-Sliced Design (FSD)}
-Một trong những thách thức lớn nhất của các ứng dụng Frontend là việc mã nguồn trở thành "đống rác" (Spaghetti Code) khi quy mô dự án mở rộng. Để giải quyết triệt để vấn đề này, thay vì gom nhóm file theo loại tĩnh (ví dụ: một thư mục \texttt{components} khổng lồ, một thư mục \texttt{types} khổng lồ chứa mọi thứ), dự án đã mạnh dạn áp dụng \textbf{Feature-Sliced Design (FSD)} - một phương pháp luận kiến trúc nâng cao và được giới chuyên gia đánh giá là tối ưu nhất hiện nay.
+\section{Discriminated Unions và Pattern Matching}
+Trong logic kéo thả, chúng ta cần phân biệt đâu là Thẻ (Card) và đâu là Cột (List) để có cách xử lý va chạm khác nhau.
 
-FSD ép buộc lập trình viên phải chia nhỏ hệ thống thành các lớp (Layers) và các lát cắt (Slices) tập trung vào một nghiệp vụ kinh doanh (Business Domain) duy nhất. Cấu trúc cụ thể bao gồm:
-\begin{itemize}
-    \item \textbf{Layer 1: \texttt{src/app}}: Tầng cấu hình và khởi tạo (App Layer). Đây là nơi cao nhất của ứng dụng, chứa các tệp thiết lập định tuyến tổng (\texttt{router.tsx}), các hàm nạp dữ liệu cấp cao (\texttt{loaders.ts}) và file \texttt{App.tsx} bọc các Provider.
-    \item \textbf{Layer 2: \texttt{src/pages}}: Tầng giao diện trang (Pages Layer). Mỗi file trong đây đại diện cho một URL cụ thể (\texttt{DashboardPage.tsx}, \texttt{BoardPage.tsx}). Tầng này đóng vai trò như một "nhạc trưởng", nó không tự xử lý logic phức tạp mà chỉ \textit{gọi} các thành phần từ tầng dưới lên và sắp xếp chúng.
-    \item \textbf{Layer 3: \texttt{src/features}}: Tầng tính năng cốt lõi (Features Layer) - "Trái tim" của hệ thống. Đây là nơi chứa các Slice. Trong dự án này, nhóm tách ra thành các slice độc lập như \texttt{auth} và \texttt{kanban}. Điểm đặc biệt của FSD là \textit{sự cô lập (Encapsulation)}: Trong thư mục \texttt{features/kanban}, nó sẽ chứa trọn vẹn mọi thứ liên quan đến Kanban: từ \texttt{components/} riêng (như \texttt{List}, \texttt{TaskCard}), đến \texttt{store/} quản lý trạng thái kéo thả, và \texttt{types/} nội bộ. Nếu sau này cần xóa tính năng Kanban, ta chỉ việc xóa một thư mục duy nhất mà không ảnh hưởng tới bất kỳ đâu khác trong app.
-    \item \textbf{Layer 4: \texttt{src/components}}: Tầng các thành phần UI chung (Shared UI Layer). Nơi đây chứa các Component dạng "ngu ngốc" (Dumb Components) như Button, Input, Modal, hay Layouts (\texttt{Header}, \texttt{Sidebar}). Những component này hoàn toàn vô tri về nghiệp vụ (ví dụ: Button không được biết nó đang thêm Card hay xóa Board), chúng chỉ nhận vào \texttt{Props} và xử lý sự kiện \texttt{onClick}.
-\end{itemize}
-Sự phân lớp nghiêm ngặt này không chỉ giúp việc điều hướng và bảo trì mã nguồn trở nên trực quan mà còn giải quyết hoàn toàn rủi ro xung đột code (Merge Conflict) khi làm việc nhóm quy mô lớn.
-
-\chapter{Kiến thức nền tảng và Lý thuyết cốt lõi}
-
-\section{Sự trỗi dậy của React Hooks}
-Trước năm 2019, cách duy nhất để quản lý vòng đời (Lifecycle) và Trạng thái (State) trong React là sử dụng Class Components. Việc sử dụng Class thường dẫn đến mã nguồn dài dòng, khó chia sẻ logic (phải dùng đến Higher Order Components hay Render Props) và khó hiểu cho cả người mới lẫn các trình biên dịch mã.
-
-Bản phát hành React 16.8 đã giới thiệu \textbf{React Hooks} - một bước ngoặt thay đổi vĩnh viễn hệ sinh thái. Hooks cho phép lập trình viên "móc" (hook into) vào các tính năng của React trực tiếp từ Functional Components. Dự án Trello Mini tận dụng triệt để sức mạnh của các Hooks:
-\begin{itemize}
-    \item \textbf{useState:} Công cụ cơ bản nhất, dùng để quản lý các trạng thái cục bộ mang tính giao diện (UI State). Ví dụ: Trạng thái một cái Popup Modal đang mở hay đóng, nội dung text người dùng đang nhập dở trong form \texttt{AddCardForm} trước khi nhấn Submit.
-    \item \textbf{useEffect:} Quản lý các \textit{Side-effects} (Hiệu ứng phụ ảnh hưởng tới bên ngoài hệ thống React). Nhóm sử dụng Hook này để tương tác với các API của trình duyệt: gán bộ lắng nghe sự kiện (Event Listeners) để bắt phím "Escape" giúp đóng form tiện lợi, hoặc thao tác thay đổi tiêu đề trang web (Document Title).
-    \item \textbf{useRef:} Được sử dụng rộng rãi để tham chiếu trực tiếp tới các thẻ DOM (Ví dụ: tự động focus con trỏ chuột vào ô Input ngay khi Form được hiển thị lên).
-\end{itemize}
-
-\section{Tách biệt Logic và Giao diện qua Custom Hooks và Zustand Store}
-Một sai lầm rất phổ biến của lập trình viên Frontend là nhồi nhét mọi xử lý tính toán vào bên trong file giao diện. Để mã nguồn giữ được tính thuần khiết (Clean Code), nhóm tuân thủ triệt để nguyên tắc \textit{Separation of Concerns (Tách biệt mối quan tâm)}.
-
-Thay vì sử dụng \texttt{Context API} truyền thống vốn vướng phải vấn đề nghiêm trọng về hiệu năng (gây re-render toàn bộ ứng dụng khi một thuộc tính nhỏ thay đổi), dự án đã nâng cấp lên \textbf{Zustand} - Thư viện quản lý Global State hiện đại và đang có xu hướng lấn át cả Redux.
-
-Zustand cho phép tạo ra các Custom Hooks chuyên biệt (ví dụ \texttt{useBoardStore}). Từ đó, một component giao diện khi muốn tạo thẻ mới, nó chỉ việc gọi duy nhất một dòng lệnh: \texttt{addCard(boardId, listId, title)}. Toàn bộ logic tìm kiếm mảng, cập nhật đối tượng, đồng bộ dữ liệu hoàn toàn bị ẩn đi. UI Component đúng nghĩa chỉ còn là một "trình hiển thị".
-
-\section{Routing nâng cao (Data Router) với React Router v6.4+}
-Định tuyến (Routing) là xương sống của mọi Single Page Application. Từ phiên bản 6.4, React Router đã giới thiệu kiến trúc \textbf{Data Router} mang tính cách mạng, lấy cảm hứng từ các framework như Remix.
-
-Cách tiếp cận cũ thường gặp vấn đề \textit{Waterfall Network Requests}: Giao diện được render ra $\rightarrow$ Gọi \texttt{useEffect} $\rightarrow$ Hiển thị vòng tròn quay loading $\rightarrow$ Đợi lấy dữ liệu $\rightarrow$ Lại render lần nữa. Quá trình này gây giật, chớp màn hình, trải nghiệm rất tệ.
-
-Dự án này áp dụng phương pháp \textbf{Data Loading} mới:
-\begin{itemize}
-    \item Khai báo tuyến đường đi kèm với một hàm \texttt{loader}.
-    \item Khi người dùng yêu cầu truy cập \texttt{/boards/:boardId}, React Router sẽ chặn (intercept) quá trình render, chạy hàm \texttt{loader} trước để chui vào \texttt{Zustand Store} hoặc \texttt{Local Storage} trích xuất dữ liệu của bảng đó.
-    \item Nếu lấy dữ liệu thành công, Router mới tiến hành truyền dữ liệu trực tiếp vào component \texttt{BoardPage}. Trang hiển thị ngay lập tức với đầy đủ nội dung, không hề có bất cứ độ trễ hay vòng xoay loading cục bộ nào.
-\end{itemize}
-
-\chapter{Quản lý Trạng thái và Tối ưu hóa}
-
-\section{Kiến trúc Global State Design với Zustand}
-Dự án quyết định từ bỏ \textbf{Context API} và \textbf{useReducer} truyền thống để chuyển sang \textbf{Zustand} - một thư viện quản lý trạng thái hiện đại, nhẹ, nhanh và được yêu thích nhất hiện nay. Cấu trúc State bao gồm các vùng chính:
-\begin{itemize}
-    \item \textbf{Slice Pattern:} Hệ thống State (State Tree) Kanban vô cùng phức tạp (Mảng Bảng chứa Mảng Cột, Mảng Cột chứa Mảng Thẻ). Nhóm đã chia nhỏ Store thành các mảnh (Slices) độc lập: \texttt{BoardSlice}, \texttt{ListSlice}, \texttt{CardSlice} để dễ bảo trì.
-    \item \textbf{Khắc phục điểm yếu React Context:} Với Zustand, Component chỉ re-render khi phần State nó cần (Selectors) thực sự bị thay đổi, xóa bỏ hoàn toàn hiện tượng re-render dây chuyền (Waterfall re-renders) của Context API.
-    \item \textbf{Kết hợp Immer:} Bất biến (Immutability) là nguyên tắc cốt lõi của React. Thay vì phải dùng \textit{spread operator} (\texttt{...state}) quá phức tạp, nhóm đã kết hợp middleware \textbf{Immer} để viết logic cập nhật dữ liệu tự nhiên như state có thể thay đổi (mutable data), giúp code cực kỳ trực quan và sạch sẽ.
-\end{itemize}
-
-\section{Tương tác Local Storage (Persistence)}
-Do đặc thù không sử dụng Backend, việc đảm bảo dữ liệu không bị mất khi tải lại trang (F5) là bắt buộc.
-Nhóm không viết \texttt{useEffect} để tự bắt sự kiện thủ công vì rất kém hiệu quả. Thay vào đó, nhóm áp dụng \textbf{Persist Middleware} tích hợp sẵn của Zustand.
-Chỉ với vài dòng cấu hình, mọi thay đổi trong \texttt{useBoardStore} (thêm thẻ, xóa cột) đều được tự động đồng bộ xuống Local Storage của trình duyệt một cách trong suốt (transparent) và cực kỳ an toàn.
-
-\section{Tối ưu hiệu năng re-render thông qua Zustand Selectors}
-Một điểm yếu chết người của React là cơ chế Re-render: Khi Component cha thay đổi trạng thái, toàn bộ Component con sẽ bị render lại một cách mù quáng. Đối với ứng dụng Kanban, việc kéo một TaskCard di chuyển từng pixel có thể phát sinh hàng trăm lần thay đổi trạng thái mỗi giây. Nếu không tối ưu, giao diện sẽ bị đơ (lag).
-
-Nhờ kiến trúc của Zustand, nhóm đã giải quyết triệt để vấn đề này bằng kỹ thuật \textbf{Atomic Selectors}. Thay vì import toàn bộ đối tượng State khổng lồ vào Component:
 \begin{Verbatim}
-// Cách làm sai (Gây re-render liên tục)
-const { boards } = useBoardStore();
+type DragItem = 
+  | { type: 'CARD'; data: ICard; listId: string }
+  | { type: 'LIST'; data: IList; boardId: string };
+
+function onDragStart(item: DragItem) {
+  if (item.type === 'CARD') {
+    // TypeScript biết chắc chắn ở đây item có listId
+    console.log("Đang kéo thẻ từ cột:", item.listId);
+  } else {
+    // Ở đây item chỉ có boardId
+    console.log("Đang kéo cột trong bảng:", item.boardId);
+  }
+}
 \end{Verbatim}
 
-Lập trình viên được ép buộc phải chỉ định (select) chính xác mảng dữ liệu mà Component đó quan tâm:
+\chapter{React 18/19 và Hiệu năng Đột phá}
+
+\section{Concurrent Mode: Xử lý đa nhiệm trong UI}
+React 18 không chỉ là một bản cập nhật thông thường, nó là sự thay đổi về mô hình thực thi. Với \textbf{Concurrent Rendering}, React có thể chuẩn bị giao diện mới ở "hậu trường" mà không làm gián đoạn các tương tác hiện tại của người dùng. 
+
+\section{Deep Dive into useTransition}
+Khi người dùng gõ từ khóa tìm kiếm thẻ, hai việc xảy ra:
+\begin{enumerate}
+    \item Ô input cần hiển thị ký tự người dùng vừa gõ (Ưu tiên 1 - Phải ngay lập tức).
+    \item Danh sách thẻ bên dưới cần được lọc lại (Ưu tiên 2 - Có thể trễ 100-200ms).
+\end{enumerate}
+Nếu không có \texttt{useTransition}, React sẽ cố gắng làm cả hai cùng lúc. Nếu danh sách thẻ quá lớn, ô input sẽ bị khựng (lag). \texttt{useTransition} cho phép React "trì hoãn" việc lọc danh sách để ưu tiên hiển thị ô input.
+
+\section{Suspense và Error Boundaries}
+Dự án kết hợp \textbf{Suspense} để hiển thị Skeleton Screen (giao diện khung xương) trong khi đợi dữ liệu từ LocalStorage hoặc API, mang lại cảm giác ứng dụng phản hồi nhanh hơn thực tế (Perceived Performance). Đi kèm với đó là \textbf{Error Boundaries} để đảm bảo nếu một thẻ bị lỗi render, toàn bộ bảng Kanban vẫn hoạt động bình thường thay vì bị trắng trang.
+
+\chapter{Zustand: Quản lý State Hiện đại}
+
+\section{Tại sao không dùng Redux hay Context API?}
+\begin{itemize}
+    \item \textbf{Context API:} Quá đơn giản cho các ứng dụng phức tạp. Mỗi khi một giá trị nhỏ trong Context thay đổi, toàn bộ các component con đều bị render lại, dẫn đến hiệu năng cực kém khi bảng Kanban có hàng trăm thẻ.
+    \item \textbf{Redux Toolkit:} Quá rườm rà. Để thêm một tính năng "Xóa thẻ", ta cần viết Action, Reducer, Slice, Dispatch. Mã nguồn trở nên nặng nề không cần thiết.
+    \item \textbf{Zustand:} Cung cấp cơ chế \textit{Selectors} giống Redux giúp tối ưu render, nhưng lại có cú pháp khai báo cực kỳ ngắn gọn giống như các Hook bình thường.
+\end{itemize}
+
+\section{Zustand Middleware và Data Persistence}
 \begin{Verbatim}
-// Cách làm đúng chuẩn tối ưu hiệu năng
-const list = useBoardStore((state) =>
-  state.boards.find(b => b.id === boardId)
-       .lists.find(l => l.id === listId)
+export const useBoardStore = create<StoreState>()(
+  devtools(
+    persist(
+      immer((set) => ({ ... })),
+      { name: 'trello-storage' }
+    )
+  )
 );
 \end{Verbatim}
-Nhờ vậy, khi Thẻ A cập nhật nội dung, Zustand sẽ thông minh đối chiếu và \textit{chỉ render duy nhất Thẻ A}, hoàn toàn bỏ qua hàng ngàn Component Thẻ B, Thẻ C đang nằm cùng trên màn hình. Kỹ thuật này giúp ứng dụng đạt chỉ số 60 FPS (Frames Per Second) mượt mà ngay cả khi chạy trên trình duyệt của thiết bị di động yếu.
-
-\section{Design Patterns trong React và Sự chuyển dịch sang Custom Hooks}
-Trong quá trình phát triển của hệ sinh thái React, các kỹ sư phần mềm đã không ngừng tìm kiếm các mẫu thiết kế (Design Patterns) để tái sử dụng logic (Logic Reuse) giữa các Component. Sự tiến hóa của các mẫu thiết kế này phản ánh sự trưởng thành của React.
-
-\subsection{Higher-Order Components (HOC) và Render Props}
-Trước khi Hooks ra đời (React 16.8), hai mẫu thiết kế thống trị là \textbf{Higher-Order Components (HOC)} và \textbf{Render Props}.
+Việc lồng ghép các Middleware cho thấy sức mạnh của Zustand:
 \begin{itemize}
-    \item \textbf{HOC (Higher-Order Component):} Là một hàm nhận vào một Component và trả về một Component mới với các props hoặc logic được bổ sung. Tuy nhiên, việc lạm dụng HOC dẫn đến hiện tượng "Wrapper Hell" - cây Component bị độn lên với hàng tá các lớp bọc (wrappers) lồng nhau, làm cho việc gỡ lỗi (debugging) trở thành ác mộng.
-    \item \textbf{Render Props:} Là kỹ thuật chia sẻ mã giữa các React components bằng cách sử dụng một prop có giá trị là một hàm. Giống như HOC, Render Props giúp tái sử dụng logic, nhưng lại dễ rơi vào tình trạng "Callback Hell" khi lồng nhiều Render Props với nhau.
+    \item \textbf{Immer:} Biến code cập nhật mảng lồng nhau từ 10 dòng thành 1 dòng.
+    \item \textbf{Persist:} Tự động đồng bộ với LocalStorage, giải quyết bài toán lưu trữ dữ liệu phía client.
+    \item \textbf{Devtools:} Cho phép debug trạng thái ứng dụng một cách chuyên nghiệp.
 \end{itemize}
 
-\subsection{Sự thống trị của Custom Hooks}
-Sự ra đời của \textbf{Custom Hooks} đã thay đổi hoàn toàn cách chúng ta chia sẻ logic. Custom Hooks cho phép lập trình viên tách biệt hoàn toàn phần logic (state, side effects) ra khỏi phần giao diện (UI) mà không làm thay đổi cấu trúc của cây Component. Trong dự án Trello Mini, nhóm đã tự xây dựng nhiều Custom Hooks như \texttt{useDraggable} hoặc \texttt{useBoardState} để đóng gói các logic phức tạp, giúp các Component trở nên "mỏng" (thin) và dễ kiểm thử hơn.
+\chapter{Tailwind CSS: Hệ thống Giao diện Linh hoạt}
 
-\section{Giải thích sâu về thư viện kéo thả dnd-kit}
-Việc hiện thực hóa tính năng Kéo Thả (Drag and Drop - DnD) trong React là một bài toán khó. Các thư viện truyền thống như \texttt{react-beautiful-dnd} tuy dễ dùng nhưng thiếu tính linh hoạt và hiệu năng giảm sút khi số lượng DOM lớn. Nhóm quyết định sử dụng \textbf{dnd-kit} - một thư viện DnD hiện đại, module hóa và tập trung vào hiệu suất, khả năng truy cập (accessibility).
+\section{Sức mạnh của JIT (Just-In-Time)}
+Trong dự án này, Tailwind không chỉ là một thư viện CSS, nó là một \textit{Engine}. Nó quét toàn bộ mã nguồn React, tìm các class bạn đã dùng và chỉ sinh ra đúng bấy nhiêu CSS. Kết quả là file CSS gửi đến người dùng luôn ở mức tối thiểu, giúp tốc độ tải trang đạt điểm tuyệt đối trên Google PageSpeed Insights.
 
-\subsection{Kiến trúc của dnd-kit: Sensors và Modifiers}
+\section{Atomic Design và Reusability}
+Chúng ta không viết CSS cho từng trang. Thay vào đó, chúng ta xây dựng bộ thư viện UI:
 \begin{itemize}
-    \item \textbf{Sensors (Cảm biến):} \texttt{dnd-kit} trừu tượng hóa các thao tác đầu vào (Input) thành các Sensors. Nhóm cấu hình \texttt{PointerSensor} (dành cho chuột và cảm ứng) và \textbf{KeyboardSensor} (dành cho người dùng điều hướng bằng bàn phím). Bằng cách thiết lập độ trễ (activation constraint) là 250ms, hệ thống có thể phân biệt được đâu là một cú click chuột thông thường và đâu là hành động bắt đầu kéo (Drag start).
-    \item \textbf{Modifiers (Bộ điều chỉnh):} Cho phép can thiệp vào tọa độ (x, y) của phần tử đang được kéo trước khi nó được vẽ lên màn hình. Ví dụ, tính năng kéo thả Cột (List) sử dụng \texttt{restrictToHorizontalAxis} để giới hạn chuyển động chỉ diễn ra trên trục ngang.
+    \item \texttt{Button.tsx}: Chứa mọi logic về màu sắc, kích thước, trạng thái loading.
+    \item \texttt{Input.tsx}: Chứa logic về focus, border, error states.
 \end{itemize}
+Khi cần thay đổi màu sắc chủ đạo của toàn bộ ứng dụng, chúng ta chỉ cần sửa đúng một dòng trong file \texttt{index.css} tại khối \texttt{@theme}.
 
-\subsection{Thuật toán phát hiện va chạm (Collision Detection)}
-Làm sao để hệ thống biết được khi nào người dùng đã thả Thẻ A vào đúng Cột B? Đây là lúc các thuật toán \textit{Collision Detection} phát huy tác dụng. Trello Mini áp dụng kết hợp:
-\begin{itemize}
-    \item \textbf{closestCenter:} Tính toán khoảng cách từ tâm của phần tử đang được kéo (Drag Overlay) đến tâm của các vùng thả (Droppable areas). Thẻ sẽ rơi vào vùng có khoảng cách tâm ngắn nhất.
-    \item \textbf{closestCorners:} Tính toán khoảng cách dựa trên 4 góc của hộp bao quanh (Bounding box). Phù hợp cho các lưới (Grid) hoặc danh sách phức tạp.
-\end{itemize}
+\chapter{Tối ưu hóa Hiệu năng và Trải nghiệm người dùng}
 
-\section{Quản lý State chuyên sâu: Context API vs Redux vs Zustand}
-Lựa chọn công cụ quản lý State là một trong những quyết định kiến trúc quan trọng nhất.
+\section{Kỹ thuật Virtualization (Tầm nhìn tương lai)}
+Mặc dù dự án hiện tại xử lý tốt hàng trăm thẻ, nhưng với hàng ngàn thẻ, chúng ta cần đến \textbf{Virtualization} (chỉ render những thẻ đang hiển thị trên màn hình). Đây là hướng phát triển tiếp theo của dự án để đảm bảo hiệu năng không giới hạn.
 
-\subsection{Hạn chế của Context API}
-Context API có sẵn trong React rất tuyệt vời cho các dữ liệu ít thay đổi (như Theme, User Auth). Tuy nhiên, khi áp dụng cho bài toán Trello (với State là một mảng hàng trăm Thẻ thay đổi liên tục), Context API bộc lộ điểm yếu "chết người": Mọi Component tiêu thụ (consume) Context đều bị re-render mỗi khi giá trị Context thay đổi, bất kể Component đó có sử dụng phần dữ liệu bị thay đổi hay không.
+\section{Debouncing và Throttling trong Xử lý sự kiện}
+Các hành động như thay đổi kích thước cửa sổ hoặc cuộn trang được tối ưu bằng \textbf{Throttling} để giảm số lần tính toán lại vị trí các thẻ, giúp CPU không bị quá tải.
 
-\subsection{Sự cồng kềnh của Redux Toolkit}
-Redux giải quyết được vấn đề re-render thông qua \texttt{useSelector}, nhưng lại mang theo một lượng "Boilerplate code" (Mã lặp) khổng lồ. Để thêm một hành động đơn giản như xóa thẻ, lập trình viên phải định nghĩa Action, Reducer, Dispatcher. Điều này làm giảm tốc độ phát triển (Development Speed).
-
-\subsection{Tại sao Zustand + Immer là "Chân ái"?}
-Zustand kết hợp những ưu điểm của cả hai: Gọn nhẹ như Context API nhưng tối ưu hiệu năng render như Redux. Hơn thế nữa, khi kết hợp với \textbf{Immer} (một thư viện giúp làm việc với Immutable data một cách dễ dàng), việc cập nhật các State lồng nhau sâu (Deeply nested state) trở nên trực quan.
-\begin{Verbatim}
-// Sử dụng Zustand + Immer để cập nhật State sâu mà không cần Spread Operator phức tạp
-set(produce((draft) => {
-  const list = draft.boards[0].lists.find(l => l.id === listId);
-  list.cards.push(newCard);
-}));
-\end{Verbatim}
-Sự kết hợp này giúp mã nguồn dự án ngắn hơn khoảng 40\% so với việc dùng Redux, trong khi hiệu năng hiển thị được giữ ở mức tối đa.
+\section{Accessibility (A11y)}
+Dự án không chỉ chú trọng vẻ đẹp mà còn cả tính tiếp cận. Các thẻ và nút đều có thuộc tính \texttt{aria-label}, hỗ trợ người khiếm thị sử dụng Screen Readers để tương tác với bảng Kanban một cách dễ dàng.

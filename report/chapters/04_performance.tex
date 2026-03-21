@@ -83,6 +83,54 @@ function App() {
 
 Khi người dùng mới truy cập vào trang chủ (Dashboard), trình duyệt chỉ tải phần mã nguồn tối thiểu để hiển thị danh sách các bảng. Chỉ khi người dùng thực sự nhấp vào một bảng cụ thể, mã nguồn của \texttt{BoardDetail} và các thư viện kéo thả phức tạp mới được tải xuống bất đồng bộ. Việc áp dụng cơ chế này giúp thu nhỏ dung lượng tải ban đầu (Initial chunk) xuống dưới mức 200KB, tối ưu hóa đáng kể chỉ số LCP.
 
+\section{Tối ưu hóa Core Web Vitals chuyên sâu}
+Core Web Vitals là bộ chỉ số tiêu chuẩn của Google dùng để đánh giá trải nghiệm người dùng thực tế trên trang web. Trong đồ án này, nhóm đã tập trung tối ưu hóa ba chỉ số quan trọng nhất:
+
+\subsection{LCP (Largest Contentful Paint) - Thời gian hiển thị nội dung lớn nhất}
+LCP đo lường thời gian từ khi trang bắt đầu tải cho đến khi phần tử nội dung lớn nhất (thường là ảnh nền hoặc tiêu đề chính) được hiển thị hoàn toàn.
+\begin{itemize}
+    \item \textbf{React giúp ích:} Việc sử dụng Code Splitting giúp giảm dung lượng Bundle ban đầu, từ đó trình duyệt có thể tải và render các thành phần chính nhanh hơn.
+    \item \textbf{Thách thức:} React là một thư viện Client-side Rendering (CSR), nghĩa là trình duyệt phải tải JS trước khi có thể hiển thị nội dung. Để tối ưu LCP, nhóm đã sử dụng kỹ thuật \texttt{Suspense} kết hợp với \texttt{lazy} để ưu tiên render các thành phần "trên màn hình đầu" (Above the fold).
+\end{itemize}
+
+\subsection{FID (First Input Delay) / INP (Interaction to Next Paint)}
+FID đo lường độ trễ từ khi người dùng tương tác lần đầu (click, tap) đến khi trình duyệt có thể phản hồi. INP là chỉ số mới thay thế FID, đo lường toàn bộ quá trình phản hồi của trang.
+\begin{itemize}
+    \item \textbf{Vấn đề của React:} Các quá trình tính toán nặng trên Main Thread (như render cây DOM lớn) có thể làm nghẽn phản hồi của trình duyệt.
+    \item \textbf{Giải pháp:} Nhóm đã áp dụng \texttt{useTransition} (trong React 18) cho các tác vụ không ưu tiên (như lọc danh sách thẻ) để giữ cho giao diện luôn phản hồi mượt mà với các tương tác quan trọng của người dùng.
+\end{itemize}
+
+\subsection{CLS (Cumulative Layout Shift) - Điểm thay đổi bố cục}
+CLS đo lường sự ổn định thị giác của trang web.
+\begin{itemize}
+    \item \textbf{Cách tối ưu:} Nhóm đảm bảo mọi hình ảnh và container đều có kích thước cố định (width/height) hoặc sử dụng \textbf{Skeleton Screens} trong quá trình tải dữ liệu. Điều này ngăn chặn việc các phần tử "nhảy" vị trí khi dữ liệu được đổ vào, giúp đạt điểm CLS gần như bằng 0.
+\end{itemize}
+
+\section{Tối ưu hóa Hình ảnh và Tài nguyên (Image \& Asset Optimization)}
+Hiệu năng của ứng dụng không chỉ nằm ở mã nguồn mà còn ở cách quản lý tài nguyên tĩnh.
+
+\begin{itemize}
+    \item \textbf{Sử dụng định dạng WebP:} Thay vì dùng JPEG hoặc PNG truyền thống, nhóm ưu tiên sử dụng định dạng WebP cho các hình ảnh minh họa. WebP cung cấp khả năng nén tốt hơn từ 25-35\% mà vẫn giữ nguyên chất lượng hiển thị, giúp giảm đáng kể băng thông tải trang.
+    \item \textbf{Ưu tiên SVGs cho Icons:} Toàn bộ các biểu tượng (icons) trong ứng dụng được sử dụng dưới dạng SVG (Scalable Vector Graphics). SVG không chỉ nhẹ mà còn có thể thay đổi kích thước mà không bị vỡ nét, đồng thời có thể dễ dàng tùy chỉnh màu sắc qua CSS.
+    \item \textbf{Tối ưu hóa Font loading:} Nhóm sử dụng thuộc tính \texttt{font-display: swap} trong định nghĩa CSS để đảm bảo văn bản vẫn hiển thị bằng font hệ thống trong khi chờ tải font tùy chỉnh, tránh hiện tượng "màn hình trắng văn bản" (FOIT - Flash of Invisible Text).
+\end{itemize}
+
+\section{Phân tích Bundle với rollup-plugin-visualizer}
+Để kiểm soát kích thước ứng dụng một cách hiệu quả nhất, nhóm đã tích hợp công cụ \textbf{rollup-plugin-visualizer} vào quy trình đóng gói (Build process).
+
+Công cụ này cung cấp một biểu đồ TreeMap trực quan, cho phép lập trình viên nhìn thấy chính xác:
+\begin{itemize}
+    \item Thư viện nào đang chiếm dung lượng lớn nhất trong file Bundle cuối cùng.
+    \item Các dependencies ngầm (transitive dependencies) không cần thiết đang bị kéo vào dự án.
+\end{itemize}
+
+Dựa trên kết quả phân tích từ Visualizer, nhóm đã thực hiện các bước tối ưu hóa quan trọng:
+\begin{enumerate}
+    \item \textbf{Thay thế thư viện nặng:} Phát hiện thư viện \texttt{moment.js} chiếm quá nhiều dung lượng, nhóm đã chuyển sang sử dụng \texttt{date-fns} hoặc \texttt{dayjs} với kích thước chỉ bằng 1/10 nhưng vẫn đáp ứng đầy đủ tính năng xử lý thời gian.
+    \item \textbf{Loại bỏ mã thừa (Tree-shaking):} Đảm bảo các thư viện UI chỉ import những Component thực sự sử dụng thay vì import toàn bộ bộ thư viện.
+\end{enumerate}
+Việc kiểm soát Bundle thường xuyên giúp ứng dụng luôn giữ được sự nhẹ nhàng và tốc độ tải trang ổn định.
+
 \section{Kỹ thuật Virtualization (Windowing) cho danh sách khổng lồ}
 Mặc dù Trello Mini hiện tại hoạt động tốt với số lượng công việc vừa phải, nhóm cũng đã nghiên cứu và đề xuất áp dụng kỹ thuật \textbf{Virtualization} (còn gọi là Windowing) để chuẩn bị cho kịch bản mở rộng (Scalability) khi một bảng tính chứa tới hàng ngàn, chục ngàn thẻ công việc - một tình huống rất thực tế ở các doanh nghiệp lớn.
 

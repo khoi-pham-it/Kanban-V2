@@ -55,6 +55,41 @@ test('renders input field and adds new card on submit', () => {
 });
 \end{Verbatim}
 
+\subsection{Kiểm thử đầu cuối (End-to-End Testing) với Playwright}
+Trong khi Unit và Component Test kiểm tra các phần nhỏ của ứng dụng, Kiểm thử đầu cuối (E2E) mô phỏng toàn bộ hành trình của người dùng từ khi mở trình duyệt cho đến khi hoàn thành mục tiêu. Nhóm lựa chọn \textbf{Playwright} của Microsoft làm công cụ kiểm thử E2E chủ đạo.
+
+\begin{itemize}
+    \item \textbf{Lợi thế của Playwright:} Hỗ trợ kiểm thử trên nhiều trình duyệt khác nhau (Chromium, Firefox, WebKit) chỉ với một bộ mã duy nhất. Cơ chế \textbf{Auto-wait} giúp giảm thiểu tình trạng test bị "flickering" (lúc chạy được lúc không) do trễ mạng hoặc animation.
+    \item \textbf{Kiểm thử kéo thả (Drag and Drop):} Một trong những thách thức lớn nhất của Trello Mini là kiểm thử tính năng kéo thả. Playwright cung cấp API \texttt{page.dragAndDrop(source, target)} giúp tự động hóa hoàn toàn thao tác này.
+\end{itemize}
+
+\begin{Verbatim}
+// Ví dụ test case kéo thả một card sang cột khác bằng Playwright
+test('should drag a card from Todo to In Progress list', async ({ page }) => {
+  await page.goto('/board/1');
+
+  const sourceCard = page.locator('.card-item:has-text("Lập kế hoạch")');
+  const targetList = page.locator('.list-container:has-text("In Progress")');
+
+  // Thực hiện hành động kéo thả
+  await sourceCard.dragTo(targetList);
+
+  // Kiểm chứng card đã nằm trong cột mới
+  await expect(targetList).toContainText('Lập kế hoạch');
+});
+\end{Verbatim}
+
+Việc áp dụng E2E Test giúp nhóm tự tin hơn mỗi khi thay đổi kiến trúc lớn mà không lo sợ làm hỏng các luồng nghiệp vụ cơ bản của người dùng.
+
+\section{Các biện pháp bảo mật (Security Best Practices)}
+An toàn thông tin là một khía cạnh không thể tách rời trong phát triển phần mềm, ngay cả với các ứng dụng Frontend.
+
+\begin{itemize}
+    \item \textbf{Ngăn chặn XSS (Cross-Site Scripting):} React mặc định sẽ tự động "escape" toàn bộ giá trị render ra giao diện để ngăn chặn việc thực thi mã Javascript độc hại từ phía người dùng. Nhóm tuyệt đối không sử dụng thuộc tính \texttt{dangerouslySetInnerHTML} trừ những trường hợp thực sự cần thiết và đã được kiểm duyệt kỹ càng.
+    \item \textbf{Làm sạch dữ liệu đầu vào (Input Sanitization):} Đối với các nội dung do người dùng nhập vào (như mô tả thẻ công việc), nhóm sử dụng thư viện \textbf{DOMPurify} để loại bỏ các thẻ HTML nguy hiểm trước khi lưu trữ hoặc hiển thị.
+    \item \textbf{Bảo vệ LocalStorage:} Nhóm nhận thức được rằng \texttt{LocalStorage} dễ bị tấn công bởi các đoạn mã độc. Vì vậy, ứng dụng không lưu trữ bất kỳ thông tin nhạy cảm nào như mật khẩu hay Token bí mật dưới dạng văn bản thuần túy. Đối với các hệ thống yêu cầu bảo mật cao, nhóm đề xuất sử dụng \textbf{HttpOnly Cookies} để lưu trữ phiên đăng nhập.
+\end{itemize}
+
 \section{Tích hợp và Triển khai liên tục (CI/CD)}
 
 \subsection{Đóng gói ứng dụng (Build) với Vite}
@@ -78,3 +113,13 @@ Quy trình hoạt động diễn ra theo các bước sau:
 \end{enumerate}
 
 Nhờ mô hình này, ứng dụng luôn được đảm bảo ở trạng thái ổn định nhất mỗi khi phát hành. Người dùng có thể truy cập vào đường dẫn trực tiếp do Vercel cung cấp để trải nghiệm phiên bản mới nhất của Trello Mini chỉ trong vòng chưa đầy 2 phút sau khi mã nguồn được hợp nhất.
+
+\section{Giám sát và Ghi vết (Monitoring \& Logging)}
+Sau khi ứng dụng đã được triển khai, việc theo dõi hoạt động và phát hiện lỗi phát sinh từ phía người dùng là cực kỳ quan trọng.
+
+\begin{itemize}
+    \item \textbf{Sentry (Error Tracking):} Nhóm đề xuất tích hợp Sentry để tự động bắt và gửi thông báo về các lỗi Runtime xảy ra trên trình duyệt của người dùng. Mỗi khi có một lỗi xuất hiện, Sentry sẽ cung cấp đầy đủ thông tin về trình duyệt, hệ điều hành, dòng code bị lỗi và thậm chí là các bước người dùng đã thực hiện trước đó (Breadcrumbs).
+    \item \textbf{LogRocket (Session Replay):} Để hiểu sâu hơn về trải nghiệm người dùng và tái hiện các lỗi khó (Edge cases), các công cụ như LogRocket cho phép "ghi hình" lại phiên làm việc của người dùng (dưới dạng các sự kiện DOM, không phải video thực tế để đảm bảo tính riêng tư). Điều này giúp các lập trình viên nhìn thấy chính xác những gì người dùng đã thấy khi gặp lỗi.
+\end{itemize}
+Việc kết hợp giám sát chủ động giúp duy trì chất lượng ứng dụng và cải thiện độ tin cậy của hệ thống theo thời gian.
+
