@@ -3,6 +3,8 @@ import type { ICard, Id } from "../types";
 import CardModal from "./CardModal";
 import { useBoardStore } from "../store/useBoardStore";
 import { getLabelClassName } from "../constants";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   card: ICard;
@@ -15,6 +17,29 @@ const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const deleteCard = useBoardStore((state) => state.deleteCard);
 
+
+  const { 
+    setNodeRef, 
+    attributes, 
+    listeners, 
+    transform, 
+    transition, 
+    isDragging 
+  } = useSortable({
+    id: card.id,
+    data: {
+      type: "Card",
+      listId: listId,
+      card: card,
+    },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.2 : 1,
+  };
+
   const handleDeleteCard = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm("Bạn có chắc chắn muốn xóa thẻ này không?")) {
@@ -22,9 +47,16 @@ const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
     }
   };
 
+  
+
   return (
     <>
+      {/* Gắn ref, style và các sự kiện kéo thả vào div ngoài cùng */}
       <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
         onClick={() => setIsModalOpen(true)}
         className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow group/card cursor-pointer relative"
       >
@@ -70,5 +102,4 @@ const TaskCard = ({ card, listTitle, listId, boardId }: TaskCardProps) => {
     </>
   );
 };
-
 export default TaskCard;
