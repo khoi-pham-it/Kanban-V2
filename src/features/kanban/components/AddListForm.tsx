@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
 interface AddListFormProps {
   boardId?: string | number;
@@ -9,6 +10,14 @@ const AddListForm = ({ onAddList }: AddListFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(formRef, () => {
+    if (isEditing) {
+      setIsEditing(false);
+      setTitle("");
+    }
+  });
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -49,7 +58,7 @@ const AddListForm = ({ onAddList }: AddListFormProps) => {
   }
 
   return (
-    <div className="kanban-column flex flex-col bg-slate-200/50 dark:bg-slate-800/50 rounded-xl p-3 shrink-0 w-72 h-fit">
+    <div ref={formRef} className="kanban-column flex flex-col bg-slate-200/50 dark:bg-slate-800/50 rounded-xl p-3 shrink-0 w-72 h-fit">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <input
           ref={inputRef}

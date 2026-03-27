@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
 interface AddCardFormProps {
   listId: string | number;
@@ -9,6 +10,14 @@ const AddCardForm = ({ listId, onAddCard }: AddCardFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useClickOutside(formRef, () => {
+    if (isEditing) {
+      setIsEditing(false);
+      setTitle("");
+    }
+  });
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -55,7 +64,7 @@ const AddCardForm = ({ listId, onAddCard }: AddCardFormProps) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2">
+    <form ref={formRef} onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2">
       <textarea
         ref={inputRef}
         value={title}

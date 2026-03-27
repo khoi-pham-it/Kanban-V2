@@ -1,26 +1,35 @@
 import { useNavigate, Navigate } from "react-router-dom";
-import { useState } from "react";
 import { useAuthStore } from "../../features/auth/store/useAuthStore";
+import { useForm } from "../../hooks/useForm";
 
 const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [email, setEmail] = useState("name@company.com");
-  const [password, setPassword] = useState("password123");
+
+  const { values, handleChange, handleSubmit } = useForm({
+    initialValues: {
+      email: "name@company.com",
+      password: "password123",
+    },
+    validate: (values) => {
+      const newErrors: Record<string, string> = {};
+      if (!values.email) newErrors.email = "Email is required";
+      if (!values.password) newErrors.password = "Password is required";
+      return newErrors;
+    },
+    onSubmit: (values) => {
+      login(values.email); // Chú ý login hiện tại trong store chỉ nhận 1 tham số
+      navigate("/boards");
+    },
+  });
 
   // Đã đăng nhập thì tự động chuyển hướng về trang chủ
   if (isAuthenticated) {
     return <Navigate to="/boards" replace />;
   }
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email && password) {
-      login(email, password);
-      navigate("/boards");
-    }
-  };
+
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center p-4 bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-200">
@@ -43,7 +52,7 @@ const Login = () => {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="flex flex-col gap-2">
             <label
               className="text-sm font-semibold text-slate-700 dark:text-slate-300"
@@ -61,8 +70,8 @@ const Login = () => {
                 name="email"
                 placeholder="name@company.com"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={values.email}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -92,8 +101,8 @@ const Login = () => {
                 name="password"
                 placeholder="••••••••"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={values.password}
+                onChange={handleChange}
               />
             </div>
           </div>
