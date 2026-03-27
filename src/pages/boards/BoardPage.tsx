@@ -83,27 +83,19 @@ const BoardDetail = () => {
   const handleDragEnd = (event: DragEndEvent) => {
   const { active, over } = event;
 
-  // 1. Nếu kéo ra ngoài khu vực hợp lệ (over = null) hoặc không thay đổi vị trí, thì bỏ qua
   if (!over || active.id === over.id) return;
 
-  // Lấy dữ liệu đính kèm (data) mà bạn truyền vào useSortable hoặc useDraggable ở các component con (TaskCard, List)
   const activeData = active.data.current;
   const overData = over.data.current;
 
-  // 2. Xử lý Kéo Thả CARD
   if (activeData?.type === "Card") {
     const activeCardId = active.id;
     const fromListId = activeData.listId;
 
-    // Xác định List đích:
-    // - Nếu thả đè lên một Card khác -> Lấy listId của Card bị đè
-    // - Nếu thả vào vùng trống của List -> over.id chính là id của List đó
     const toListId = overData?.type === "Card" ? overData.listId : over.id;
 
-    // Lấy vị trí index mới (dnd-kit thường tự động cung cấp index thông qua thuộc tính sortable)
     const overIndex = overData?.sortable?.index;
 
-    // Gọi hàm moveCard từ store để cập nhật state
     if (boardId && fromListId && toListId) {
       moveCard(
         boardId,
@@ -115,10 +107,7 @@ const BoardDetail = () => {
     }
   }
 
-  // 3. Xử lý Kéo Thả LIST
   if (activeData?.type === "List") {
-    // Để làm được tính năng này, bạn cần vào store (boardSlice hoặc listSlice) 
-    // viết thêm 1 hàm `moveList` (tương tự như moveCard) để thay đổi thứ tự mảng board.lists
     console.log("Cần viết thêm hàm moveList trong store để cập nhật vị trí List!");
   }
 };
@@ -168,7 +157,6 @@ const BoardDetail = () => {
       </header>
 
       <main className="flex-1 overflow-x-auto p-6 hide-scrollbar">
-        {/* 2. Bọc khu vực render List và Card bằng DndContext */}
         <DndContext 
           sensors={sensors} 
           collisionDetection={closestCorners} 
