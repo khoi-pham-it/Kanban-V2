@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ICard, Id } from "../types";
 import { useBoardStore } from "../store/useBoardStore";
 import { LABEL_PRESETS, getLabelClassName } from "../constants";
+import { Button, Input, Modal } from "../../../components/ui";
 
 interface CardModalProps {
   boardId: Id;
@@ -30,13 +31,7 @@ function dateInputValueToIso(value: string) {
   return d.toISOString();
 }
 
-const CardModal = ({
-  boardId,
-  listId,
-  card,
-  listTitle = "Danh sách",
-  onClose,
-}: CardModalProps) => {
+const CardModal = ({ boardId, listId, card, listTitle = "Danh sách", onClose }: CardModalProps) => {
   const updateCard = useBoardStore((state) => state.updateCard);
   const deleteCard = useBoardStore((state) => state.deleteCard);
 
@@ -49,38 +44,32 @@ const CardModal = ({
 
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const hasMeta = useMemo(() => (labelsDraft.length > 0 ? true : Boolean(dueDateDraft)), [
-    labelsDraft.length,
-    dueDateDraft,
-  ]);
+  const hasMeta = useMemo(
+    () => (labelsDraft.length > 0 ? true : Boolean(dueDateDraft)),
+    [labelsDraft.length, dueDateDraft],
+  );
 
-  // Escape: thoát chế độ sửa trước, không thì đóng modal
+  // Tách logic phím escape: nếu đang sửa thì huỷ sửa
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (isEditingTitle) {
         setTitleDraft(card.title);
         setIsEditingTitle(false);
+        e.stopPropagation();
         return;
       }
       if (isEditingDescription) {
         setDescriptionDraft(card.description ?? "");
         setIsEditingDescription(false);
+        e.stopPropagation();
         return;
       }
-      onClose();
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, isEditingTitle, isEditingDescription, card.title, card.description]);
-
-  // Ngăn cuộn trang (body) khi mở modal
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, []);
+    // Sử dụng capture phase để bắt trước khi Modal đóng
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [isEditingTitle, isEditingDescription, card.title, card.description]);
 
   useEffect(() => {
     setTitleDraft(card.title);
@@ -146,22 +135,8 @@ const CardModal = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-4 md:p-0 bg-black/50 backdrop-blur-sm overflow-y-auto"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden my-auto"
-        onClick={(e) => e.stopPropagation()} // Ngăn việc click vào content làm đóng modal
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors z-10"
-          title="Đóng (Esc)"
-        >
-          <span className="material-symbols-outlined">close</span>
-        </button>
-
+    <Modal open={true} onClose={onClose}>
+      <div className="flex flex-col gap-6 -mt-2">
         <div className="p-6 md:p-8 flex flex-col gap-6">
           {/* Header: Title & List Context */}
           <div className="flex gap-4 pr-8">
@@ -170,7 +145,7 @@ const CardModal = ({
             </span>
             <div className="flex-1 min-w-0">
               {isEditingTitle ? (
-                <input
+                <Input
                   ref={titleInputRef}
                   type="text"
                   value={titleDraft}
@@ -250,38 +225,34 @@ const CardModal = ({
 
               {/* Description Section */}
               <div className="flex gap-4">
-                <span className="material-symbols-outlined text-slate-500 mt-1">
-                  description
-                </span>
+                <span className="material-symbols-outlined text-slate-500 mt-1">description</span>
                 <div className="flex-1 w-full">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                       Mô tả
                     </h3>
                     {!isEditingDescription ? (
-                      <button
-                        onClick={() => setIsEditingDescription(true)}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
-                      >
+                      <Button onClick={() => setIsEditingDescription(true)} className="px-3 py-1.5">
                         Chỉnh sửa
-                      </button>
+                      </Button>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <button
+                        <Button
                           onClick={() => {
                             setDescriptionDraft(card.description ?? "");
                             setIsEditingDescription(false);
                           }}
-                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
+                          className="px-3 py-1.5"
                         >
                           Hủy
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="primary"
                           onClick={commitDescription}
-                          className="px-3 py-1.5 bg-primary text-white hover:opacity-90 text-sm font-medium rounded-lg transition-colors"
+                          className="px-3 py-1.5"
                         >
                           Lưu
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -335,7 +306,9 @@ const CardModal = ({
                       >
                         <span
                           className={`inline-block w-4 h-4 rounded ${p.className} ${
-                            active ? "ring-2 ring-primary ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-800" : ""
+                            active
+                              ? "ring-2 ring-primary ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-800"
+                              : ""
                           }`}
                         />
                         <span className="text-sm">{p.key}</span>
@@ -350,39 +323,37 @@ const CardModal = ({
                   <span className="material-symbols-outlined text-lg">schedule</span>
                   Ngày hết hạn
                 </div>
-                <input
+                <Input
                   type="date"
                   value={dueDateDraft}
                   onChange={(e) => commitDueDate(e.target.value)}
                   className="mt-2 w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-sm text-slate-800 dark:text-slate-200"
                 />
                 {dueDateDraft && (
-                  <button
-                    onClick={() => commitDueDate("")}
-                    className="mt-2 w-full px-2 py-1 rounded-md text-sm bg-white/70 hover:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 transition-colors"
-                  >
+                  <Button onClick={() => commitDueDate("")} className="mt-2 w-full">
                     Xóa ngày
-                  </button>
+                  </Button>
                 )}
               </div>
 
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 mt-4">
                 Hành động
               </h3>
-              <button
+              <Button
+                variant="danger"
                 onClick={handleDelete}
-                className="flex items-center gap-2 w-full p-2 bg-slate-100 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg text-sm font-medium transition-colors text-left group"
+                className="flex items-center gap-2 w-full p-2 justify-start group"
               >
                 <span className="material-symbols-outlined text-lg group-hover:text-red-600 dark:group-hover:text-red-400">
                   delete
                 </span>
                 Xóa thẻ
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

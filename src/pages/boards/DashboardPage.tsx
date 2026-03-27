@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import BoardCard from "../../features/kanban/components/BoardCard";
+import { BoardCard } from "../../features/kanban/components";
+import { Modal } from "../../components/ui";
 import { useBoardStore } from "../../features/kanban/store/useBoardStore";
-import Modal from "../../components/ui/Modal";
 
 const Dashboard = () => {
   const boards = useBoardStore((state) => state.boards);
@@ -61,12 +61,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {boards.map((board, idx) => (
-          <BoardCard
-            key={board.id}
-            board={board}
-            idx={idx}
-            onDelete={handleDeleteBoard}
-          />
+          <BoardCard key={board.id} board={board} idx={idx} onDelete={handleDeleteBoard} />
         ))}
 
         <button
@@ -88,9 +83,7 @@ const Dashboard = () => {
         onClose={() => setIsCreateBoardOpen(false)}
       >
         <form onSubmit={handleSubmitCreateBoard} className="flex flex-col gap-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Tên bảng
-          </label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tên bảng</label>
           <input
             ref={inputRef}
             type="text"

@@ -61,7 +61,9 @@ export const createCardSlice: StateCreator<
       const [moving] = fromList.cards.splice(fromIndex, 1);
 
       const targetIndexRaw =
-        typeof overIndex === "number" && Number.isFinite(overIndex) ? overIndex : toList.cards.length;
+        typeof overIndex === "number" && Number.isFinite(overIndex)
+          ? overIndex
+          : toList.cards.length;
       const targetIndex = Math.max(0, Math.min(toList.cards.length, targetIndexRaw));
 
       toList.cards.splice(targetIndex, 0, moving);

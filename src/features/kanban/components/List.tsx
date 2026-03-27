@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { IList, Id } from "../types";
-import TaskCard from "./TaskCard";
-import AddCardForm from "./AddCardForm";
+import { AddCardForm, TaskCard } from "./";
 import { useBoardStore } from "../store/useBoardStore";
 
 // Import dnd-kit
@@ -23,14 +22,7 @@ const List = ({ list, boardId }: ListProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Khởi tạo useSortable cho List
-  const { 
-    setNodeRef, 
-    attributes, 
-    listeners, 
-    transform, 
-    transition,
-    isDragging 
-  } = useSortable({
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: list.id,
     data: {
       type: "List",
@@ -84,14 +76,14 @@ const List = ({ list, boardId }: ListProps) => {
 
   // Gắn ref, style vào div tổng của List. Nhưng gắn attributes và listeners vào phần Header để chỉ cầm Header kéo được
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
+    <div
+      ref={setNodeRef}
+      style={style}
       className="kanban-column flex flex-col bg-slate-200/50 dark:bg-slate-800/50 rounded-xl p-3 shrink-0 w-72"
     >
       {/* Gắn thuộc tính kéo thả vào khu vực tiêu đề (Drag Handle) */}
-      <div 
-        {...attributes} 
+      <div
+        {...attributes}
         {...listeners}
         className="flex items-center justify-between mb-4 px-1 group/list cursor-grab active:cursor-grabbing"
       >
@@ -107,7 +99,7 @@ const List = ({ list, boardId }: ListProps) => {
               if (e.key === "Escape") cancelEditTitle();
             }}
             // Thêm onPointerDown={(e) => e.stopPropagation()} để ngăn việc click vào input bị dnd-kit hiểu lầm là đang kéo
-            onPointerDown={(e) => e.stopPropagation()} 
+            onPointerDown={(e) => e.stopPropagation()}
             className="flex-1 min-w-0 font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder="Tên danh sách"
           />
@@ -141,10 +133,7 @@ const List = ({ list, boardId }: ListProps) => {
       </div>
 
       {/* Bọc khu vực Card bằng SortableContext để nhận diện kéo thả Card */}
-      <SortableContext 
-        items={list.cards.map(c => c.id)} 
-        strategy={verticalListSortingStrategy}
-      >
+      <SortableContext items={list.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
           {list.cards.map((card) => (
             <TaskCard
