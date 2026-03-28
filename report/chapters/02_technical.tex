@@ -9,6 +9,13 @@
     \item \textbf{Môi trường lập trình (IDE):} Visual Studio Code (VSCode). Đây là sự lựa chọn số một của các lập trình viên Web nhờ dung lượng nhẹ, hiệu năng cao và hệ sinh thái Extensions khổng lồ. Nhóm đã cấu hình sẵn một bộ quy chuẩn cho VSCode bao gồm: \textit{ESLint} (kiểm tra các lỗi cú pháp và logic mã nguồn), \textit{Prettier} (đảm bảo format code đồng nhất cho mọi thành viên), và \textit{Tailwind CSS IntelliSense} (hỗ trợ tự động gợi ý class CSS, tăng tốc độ cắt HTML/CSS lên 300\%).
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình VSCode với package.json mở lên, cho thấy cấu hình ESLint và Prettier
+    \rule{0.8\textwidth}{0.4\textwidth}
+    \caption{Cấu hình môi trường phát triển trên VSCode}
+\end{figure}
+
 \section{Kiến trúc Siêu tốc của Vite: Deep Dive}
 Thay vì sử dụng các công cụ đóng gói truyền thống như Webpack vốn đã trở nên già cỗi và chậm chạp, dự án lựa chọn \textbf{Vite}. Để hiểu tại sao Vite lại là "kẻ thay đổi cuộc chơi", ta cần đi sâu vào kiến trúc bên trong của nó.
 
@@ -27,142 +34,380 @@ Vite sử dụng hai trình đóng gói khác nhau cho hai mục đích khác nh
 \subsection{Native ESM: Giải mã sự khác biệt với Webpack}
 Webpack hoạt động theo cơ chế "Bundle-based": Nó phải quét toàn bộ ứng dụng, xây dựng cây phụ thuộc (Dependency Graph) và đóng gói tất cả thành một file khổng lồ (bundle) trước khi có thể hiển thị trang web. Khi dự án lớn lên, thời gian đợi chờ này tăng theo cấp số nhân ($O(n)$).
 
-Vite giải quyết bài toán này bằng cách sử dụng \textbf{Native ESM (ES Modules)} của trình duyệt. Thay vì đóng gói, Vite chỉ đơn giản là phục vụ các file nguồn theo yêu cầu của trình duyệt. 
-\begin{enumerate}
-    \item Trình duyệt gặp lệnh \texttt{import}.
-    \item Trình duyệt gửi một request HTTP đến server của Vite.
-    \item Vite nhận request, biên dịch đúng file đó sang JavaScript tương thích (nếu cần) và gửi lại.
-\end{enumerate}
-Nhờ đó, tốc độ khởi động của Vite là hằng số ($O(1)$), không phụ thuộc vào độ lớn của dự án.
+Vite giải quyết bài toán này bằng cách sử dụng \textbf{Native ESM (ES Modules)} của trình duyệt. Thay vì đóng gói, Vite chỉ đơn giản là phục vụ các file nguồn theo yêu cầu của trình duyệt. Nhờ đó, tốc độ khởi động của Vite là hằng số ($O(1)$), không phụ thuộc vào độ lớn của dự án.
 
-\subsection{Hot Module Replacement (HMR) và Hiệu quả lập trình}
-Vite thực hiện HMR qua Native ESM một cách cực kỳ tinh tế. Khi một file thay đổi, Vite chỉ vô hiệu hóa module đó và các module liên quan trực tiếp. Trình duyệt chỉ cần tải lại đúng file đó mà không mất đi trạng thái (state) hiện tại của ứng dụng. Điều này giúp lập trình viên thấy ngay kết quả thay đổi sau khi nhấn Ctrl+S chỉ trong vài mili giây.
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp terminal khi chạy "npm run dev", cho thấy thời gian khởi động (vd: ready in 150ms)
+    \rule{0.8\textwidth}{0.3\textwidth}
+    \caption{Thời gian khởi động siêu tốc của Vite}
+\end{figure}
+
 
 \section{Kiến trúc mã nguồn Feature-Sliced Design (FSD)}
-Dự án áp dụng \textbf{Feature-Sliced Design (FSD)} để giải quyết bài toán bảo trì lâu dài. FSD không chỉ là cách đặt tên thư mục, nó là một tư duy phân cấp logic:
+Dự án áp dụng \textbf{Feature-Sliced Design (FSD)} để giải quyết bài toán bảo trì lâu dài. FSD không chỉ là cách đặt tên thư mục, nó là một tư duy phân cấp logic. Cấu trúc thư mục được chia thành các lớp (layers) rõ ràng theo mức độ phụ thuộc giảm dần:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Layer} & \textbf{Trách nhiệm} & \textbf{Ví dụ trong dự án} \\ \hline
 App & Cấu hình toàn cục & \texttt{router.tsx}, \texttt{main.tsx} \\ \hline
 Pages & Giao diện các trang & \texttt{DashboardPage}, \texttt{BoardPage} \\ \hline
-Features & Logic nghiệp vụ & \texttt{AddCardForm}, \texttt{DeleteBoardButton} \\ \hline
-Entities & Logic dữ liệu & \texttt{useBoardStore}, \texttt{ICard interface} \\ \hline
-Shared & Thành phần dùng chung & \texttt{Button.tsx}, \texttt{api.ts} \\ \hline
+Features & Logic nghiệp vụ & \texttt{auth}, \texttt{kanban} \\ \hline
+Shared & Thành phần dùng chung & \texttt{Button.tsx}, \texttt{Input.tsx} \\ \hline
 \end{tabular}
 \caption{Phân tầng kiến trúc FSD trong Trello Mini}
 \end{table}
 
-\chapter{Hệ thống Type tiên tiến với TypeScript}
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp cây thư mục src/ trong VSCode thể hiện rõ kiến trúc FSD
+    \rule{0.6\textwidth}{0.5\textwidth}
+    \caption{Cấu trúc thư mục Feature-Sliced Design (FSD) của dự án}
+\end{figure}
 
-\section{Generics: Tái sử dụng mã nguồn an toàn}
-Generics là tính năng quan trọng nhất để tạo ra các component và hàm linh hoạt. Trong ứng dụng Kanban, chúng ta thường xuyên phải xử lý các danh sách (Bảng, Cột, Thẻ).
+\chapter{Hệ thống Routing và Lazy Loading Component}
 
-\begin{Verbatim}
-// Interface cho một API Response chung
-interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message: string;
-}
+\section{Routing thủ công với React Router}
+Trong các Single Page Application, việc điều hướng giữa các trang diễn ra ở phía client mà không cần tải lại toàn bộ tài liệu HTML. React Router là thư viện tiêu chuẩn để quản lý việc này. Trong dự án, chúng tôi tự cấu hình React Router kết hợp với việc phân quyền (Protected Routes) để đảm bảo an ninh.
 
-// Cách dùng:
-const boardResponse: ApiResponse<IBoard> = { ... };
-const cardsResponse: ApiResponse<ICard[]> = { ... };
-\end{Verbatim}
-Việc sử dụng \texttt{<T>} giúp chúng ta định nghĩa cấu trúc dữ liệu một lần và sử dụng cho nhiều loại thực thể khác nhau mà vẫn giữ được sự kiểm soát chặt chẽ của TypeScript.
-
-\section{Utility Types: Biến đổi linh hoạt}
-\begin{itemize}
-    \item \textbf{Partial<T>}: Cực kỳ hữu ích trong các form cập nhật. Khi người dùng chỉ muốn sửa tên thẻ, chúng ta truyền một \texttt{Partial<ICard>} vào store thay vì bắt buộc phải truyền toàn bộ đối tượng.
-    \item \textbf{Required<T>}: Ngược lại với Partial, bắt buộc tất cả thuộc tính phải có giá trị.
-    \item \textbf{Readonly<T>}: Ngăn chặn việc thay đổi dữ liệu trực tiếp, ép buộc lập trình viên phải sử dụng các hàm cập nhật state của Zustand (tuân thủ nguyên tắc Immutability).
-\end{itemize}
-
-\section{Discriminated Unions và Pattern Matching}
-Trong logic kéo thả, chúng ta cần phân biệt đâu là Thẻ (Card) và đâu là Cột (List) để có cách xử lý va chạm khác nhau.
+\subsection{Bảo vệ Tuyến đường (Protected Routes)}
+Bảo vệ tuyến đường là kỹ thuật ngăn chặn người dùng chưa đăng nhập truy cập vào các trang nhạy cảm (như Dashboard hay bảng công việc).
 
 \begin{Verbatim}
-type DragItem = 
-  | { type: 'CARD'; data: ICard; listId: string }
-  | { type: 'LIST'; data: IList; boardId: string };
+// Code mẫu: src/components/guard/ProtectedRoute.tsx
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuthStore } from "../../features/auth/store/useAuthStore";
 
-function onDragStart(item: DragItem) {
-  if (item.type === 'CARD') {
-    // TypeScript biết chắc chắn ở đây item có listId
-    console.log("Đang kéo thẻ từ cột:", item.listId);
-  } else {
-    // Ở đây item chỉ có boardId
-    console.log("Đang kéo cột trong bảng:", item.boardId);
+const ProtectedRoute = () => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
-}
+
+  return <Outlet />;
+};
+
+export default ProtectedRoute;
 \end{Verbatim}
 
-\chapter{React 18/19 và Hiệu năng Đột phá}
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh minh họa kết quả: Cố tình gõ URL /boards khi chưa đăng nhập và bị đá về /login
+    \rule{0.8\textwidth}{0.4\textwidth}
+    \caption{Chuyển hướng về trang đăng nhập khi truy cập trái phép}
+\end{figure}
 
-\section{Concurrent Mode: Xử lý đa nhiệm trong UI}
-React 18 không chỉ là một bản cập nhật thông thường, nó là sự thay đổi về mô hình thực thi. Với \textbf{Concurrent Rendering}, React có thể chuẩn bị giao diện mới ở "hậu trường" mà không làm gián đoạn các tương tác hiện tại của người dùng. 
+\section{Lazy Loading Component}
+Để tối ưu hóa thời gian tải trang ban đầu (First Contentful Paint), ứng dụng sử dụng kỹ thuật Lazy Loading. Thay vì gói toàn bộ mã nguồn vào một file JavaScript khổng lồ, React chia nhỏ mã nguồn và chỉ tải về (fetch) các component khi người dùng thực sự điều hướng đến trang đó.
 
-\section{Deep Dive into useTransition}
-Khi người dùng gõ từ khóa tìm kiếm thẻ, hai việc xảy ra:
+\subsection{Sử dụng React.lazy và Suspense}
+Kỹ thuật này được thực hiện thông qua hàm \texttt{lazy()} của React, kết hợp với component \texttt{<Suspense>} để hiển thị giao diện chờ (fallback) trong thời gian tải.
+
+\textbf{Bài tập nhỏ 1 \& 2: Thiết lập Routing thủ công và Lazy Loading}
 \begin{enumerate}
-    \item Ô input cần hiển thị ký tự người dùng vừa gõ (Ưu tiên 1 - Phải ngay lập tức).
-    \item Danh sách thẻ bên dưới cần được lọc lại (Ưu tiên 2 - Có thể trễ 100-200ms).
+    \item \textbf{Bước 1:} Sử dụng \texttt{lazy()} để import động các trang.
+    \item \textbf{Bước 2:} Tạo \texttt{SuspenseWrapper} để hiển thị trạng thái đang tải.
+    \item \textbf{Bước 3:} Khai báo danh sách các route bằng \texttt{createBrowserRouter}, áp dụng \texttt{ProtectedRoute} cho nhóm route cần bảo vệ.
 \end{enumerate}
-Nếu không có \texttt{useTransition}, React sẽ cố gắng làm cả hai cùng lúc. Nếu danh sách thẻ quá lớn, ô input sẽ bị khựng (lag). \texttt{useTransition} cho phép React "trì hoãn" việc lọc danh sách để ưu tiên hiển thị ô input.
 
-\section{Suspense và Error Boundaries}
-Dự án kết hợp \textbf{Suspense} để hiển thị Skeleton Screen (giao diện khung xương) trong khi đợi dữ liệu từ LocalStorage hoặc API, mang lại cảm giác ứng dụng phản hồi nhanh hơn thực tế (Perceived Performance). Đi kèm với đó là \textbf{Error Boundaries} để đảm bảo nếu một thẻ bị lỗi render, toàn bộ bảng Kanban vẫn hoạt động bình thường thay vì bị trắng trang.
-
-\chapter{Zustand: Quản lý State Hiện đại}
-
-\section{Tại sao không dùng Redux hay Context API?}
-\begin{itemize}
-    \item \textbf{Context API:} Quá đơn giản cho các ứng dụng phức tạp. Mỗi khi một giá trị nhỏ trong Context thay đổi, toàn bộ các component con đều bị render lại, dẫn đến hiệu năng cực kém khi bảng Kanban có hàng trăm thẻ.
-    \item \textbf{Redux Toolkit:} Quá rườm rà. Để thêm một tính năng "Xóa thẻ", ta cần viết Action, Reducer, Slice, Dispatch. Mã nguồn trở nên nặng nề không cần thiết.
-    \item \textbf{Zustand:} Cung cấp cơ chế \textit{Selectors} giống Redux giúp tối ưu render, nhưng lại có cú pháp khai báo cực kỳ ngắn gọn giống như các Hook bình thường.
-\end{itemize}
-
-\section{Zustand Middleware và Data Persistence}
 \begin{Verbatim}
+// Code mẫu: Cấu hình Router (src/app/router.tsx)
+import { lazy, Suspense } from "react";
+import { createBrowserRouter, redirect } from "react-router-dom";
+import ProtectedRoute from "../components/guard/ProtectedRoute";
+
+const Login = lazy(() => import("../pages/auth/LoginPage"));
+const Dashboard = lazy(() => import("../pages/boards/DashboardPage"));
+const BoardDetail = lazy(() => import("../pages/boards/BoardPage"));
+
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div>Đang tải giao diện...</div>}>
+    {children}
+  </Suspense>
+);
+
+export const router = createBrowserRouter([
+  { path: "/", loader: () => redirect("/boards") },
+  { path: "/login", element: <SuspenseWrapper><Login /></SuspenseWrapper> },
+  {
+    path: "/boards",
+    element: <ProtectedRoute />, // Bảo vệ toàn bộ route /boards
+    children: [
+      { index: true, element: <SuspenseWrapper><Dashboard /></SuspenseWrapper> },
+      { path: ":boardId", element: <SuspenseWrapper><BoardDetail /></SuspenseWrapper> },
+    ],
+  },
+]);
+\end{Verbatim}
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình Network Tab (Chrome DevTools) cho thấy các file JS chunk (.js) được tải riêng biệt khi chuyển trang
+    \rule{0.8\textwidth}{0.4\textwidth}
+    \caption{Network Tab chứng minh các chunk JS được tải động (Lazy loading)}
+\end{figure}
+
+\chapter{Quản lý State Toàn cục và Custom Hooks}
+
+\section{Quản lý State phức tạp với Zustand}
+Zustand được chọn làm giải pháp quản lý State toàn cục thay vì Redux hay Context API. Với các ứng dụng phức tạp như Kanban, việc chỉ sử dụng \texttt{useState} đơn giản là không khả thi do hiện tượng "Prop Drilling" (phải truyền state qua quá nhiều component trung gian). Zustand giải quyết vấn đề này với cú pháp cực kỳ ngắn gọn và hiệu năng cao.
+
+\subsection{Tích hợp Middleware: Persist và Immer}
+Việc quản lý các cấu trúc dữ liệu lồng nhau (Nested data) rất khó khăn do nguyên tắc bất biến (Immutability) của React. Zustand cho phép sử dụng \texttt{Immer} để viết code cập nhật state như thể đang "đột biến" (mutate) dữ liệu, nhưng thực chất Immer sẽ tạo ra bản sao bất biến ngầm bên dưới.
+
+Đồng thời, middleware \texttt{persist} được sử dụng để tự động lưu trạng thái vào \texttt{LocalStorage}, giúp dữ liệu không bị mất khi làm mới trang.
+
+\textbf{Bài tập nhỏ 3: Xây dựng Store quản lý Board với Zustand}
+\begin{enumerate}
+    \item \textbf{Bước 1:} Tạo một slice quản lý Board (\texttt{boardSlice.ts}) bằng \texttt{StateCreator} của Zustand.
+    \item \textbf{Bước 2:} Khởi tạo các hàm actions (như \texttt{addBoard}, \texttt{updateBoard}). Nhờ có Immer, việc thêm phần tử vào mảng chỉ cần \texttt{state.boards.push(...)} cực kỳ tự nhiên.
+    \item \textbf{Bước 3:} Gom các slice lại thành store chính và bọc bởi \texttt{persist} middleware.
+\end{enumerate}
+
+\begin{Verbatim}
+// Code mẫu: Tạo Slice cho Board (src/features/kanban/store/slices/boardSlice.ts)
+export const createBoardSlice: StateCreator<
+  StoreState,
+  [["zustand/immer", never]],
+  [],
+  BoardSlice
+> = (set) => ({
+  boards: initialBoards,
+  addBoard: (title) =>
+    set((state) => {
+      state.boards.push({
+        id: `board-${Date.now()}`,
+        title,
+        lists: [],
+      });
+    }),
+});
+
+// Code mẫu: Tạo Global Store (src/features/kanban/store/useBoardStore.ts)
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+
 export const useBoardStore = create<StoreState>()(
-  devtools(
-    persist(
-      immer((set) => ({ ... })),
-      { name: 'trello-storage' }
-    )
+  persist(
+    immer((...a) => ({
+      ...createBoardSlice(...a),
+      // ...các slice khác
+    })),
+    { name: "trello-storage" },
   )
 );
 \end{Verbatim}
-Việc lồng ghép các Middleware cho thấy sức mạnh của Zustand:
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình tab Application (DevTools) > Local Storage, thấy key "trello-storage" chứa dữ liệu
+    \rule{0.8\textwidth}{0.4\textwidth}
+    \caption{Zustand Persist tự động lưu dữ liệu vào Local Storage}
+\end{figure}
+
+\section{Custom Hooks: Tách biệt Logic khỏi Giao diện}
+Custom Hooks là công cụ mạnh mẽ nhất của React để tái sử dụng logic (Stateful logic) giữa các component khác nhau. Việc đưa logic vào Custom Hook giúp Component giao diện trở nên mỏng nhẹ và dễ đọc hơn.
+
+\textbf{Bài tập nhỏ 4 \& 5: Tự viết Custom Hooks}
+Trong dự án, chúng tôi xây dựng hai Custom Hooks thiết yếu: \texttt{useClickOutside} và \texttt{useForm}.
+
+\subsection{Hook useClickOutside}
+Hook này giúp phát hiện sự kiện click chuột ra bên ngoài một khu vực nhất định, rất hữu ích cho các UI component như Dropdown, Modal hoặc Inline-edit Input.
+
+\begin{Verbatim}
+// Code mẫu: src/hooks/useClickOutside.ts
+import { useEffect, type RefObject } from 'react';
+
+export function useClickOutside<T extends HTMLElement>(
+  ref: RefObject<T | null>,
+  handler: (event: MouseEvent | TouchEvent) => void
+) {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      const el = ref?.current;
+      // Nếu click vào chính element hoặc con của nó thì bỏ qua
+      if (!el || el.contains((event?.target as Node) || null)) return;
+      handler(event);
+    };
+
+    document.addEventListener('mousedown', listener);
+    return () => document.removeEventListener('mousedown', listener);
+  }, [ref, handler]);
+}
+\end{Verbatim}
+
+\subsection{Hook useForm}
+Hook quản lý trạng thái của một form bất kỳ, tự động xử lý các sự kiện \texttt{onChange}, xác thực lỗi (validate) và \texttt{onSubmit}.
+
+\begin{Verbatim}
+// Code mẫu: src/hooks/useForm.ts
+import { useState, type ChangeEvent } from 'react';
+
+export function useForm<T>({ initialValues, onSubmit, validate }: UseFormProps<T>) {
+  const [values, setValues] = useState<T>(initialValues);
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setValues({ ...values, [name]: value });
+    if (errors[name as keyof T]) {
+      setErrors({ ...errors, [name]: undefined });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validate) {
+      const validationErrors = validate(values);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+    }
+    onSubmit(values);
+  };
+
+  return { values, errors, handleChange, handleSubmit };
+}
+\end{Verbatim}
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình form (ví dụ form thêm Card hoặc form Đăng nhập) đang hoạt động
+    \rule{0.6\textwidth}{0.4\textwidth}
+    \caption{Component sử dụng Custom Hook useForm}
+\end{figure}
+
+
+\chapter{Hệ thống Type và Tailwind CSS}
+
+\section{TypeScript: Generics và Utility Types}
+Generics là tính năng quan trọng nhất để tạo ra các hàm linh hoạt. Trong ứng dụng Kanban, chúng ta sử dụng Generic cho Custom Hook \texttt{useForm} để quy định kiểu dữ liệu của form động. Utility Types như \texttt{Partial<T>} được dùng trong các tình huống cập nhật một phần dữ liệu (vd: chỉ sửa tiêu đề của Card).
+
+\begin{Verbatim}
+// Code mẫu: Cách dùng Generics
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+}
+const cardsResponse: ApiResponse<ICard[]> = { data: [], status: 200 };
+
+// Cách dùng Partial trong TypeScript
+type UpdateCardInput = Partial<ICard>;
+\end{Verbatim}
+
+
+\section{Tailwind CSS: Hệ thống Giao diện Linh hoạt}
+Tailwind không chỉ là một thư viện CSS, nó là một \textit{Engine}. Nó quét toàn bộ mã nguồn React, tìm các class bạn đã dùng và chỉ sinh ra đúng bấy nhiêu CSS.
+
+Thay vì viết CSS cho từng trang, chúng ta xây dựng bộ thư viện UI (Atomic Design):
 \begin{itemize}
-    \item \textbf{Immer:} Biến code cập nhật mảng lồng nhau từ 10 dòng thành 1 dòng.
-    \item \textbf{Persist:} Tự động đồng bộ với LocalStorage, giải quyết bài toán lưu trữ dữ liệu phía client.
-    \item \textbf{Devtools:} Cho phép debug trạng thái ứng dụng một cách chuyên nghiệp.
+    \item \texttt{Button.tsx}: Chứa logic về màu sắc, kích thước.
+    \item \texttt{Input.tsx}: Chứa logic về focus, error states.
 \end{itemize}
 
-\chapter{Tailwind CSS: Hệ thống Giao diện Linh hoạt}
+\begin{Verbatim}
+// Code mẫu: src/components/ui/Button.tsx (Lược trích)
+export const Button = ({ variant = "primary", className, ...props }) => {
+  const baseClasses = "px-4 py-2 rounded-md font-medium transition-colors";
+  const variants = {
+    primary: "bg-blue-600 text-white hover:bg-blue-700",
+    danger: "bg-red-600 text-white hover:bg-red-700",
+  };
 
-\section{Sức mạnh của JIT (Just-In-Time)}
-Trong dự án này, Tailwind không chỉ là một thư viện CSS, nó là một \textit{Engine}. Nó quét toàn bộ mã nguồn React, tìm các class bạn đã dùng và chỉ sinh ra đúng bấy nhiêu CSS. Kết quả là file CSS gửi đến người dùng luôn ở mức tối thiểu, giúp tốc độ tải trang đạt điểm tuyệt đối trên Google PageSpeed Insights.
+  return (
+    <button className={`${baseClasses} ${variants[variant]} ${className}`} {...props} />
+  );
+};
+\end{Verbatim}
 
-\section{Atomic Design và Reusability}
-Chúng ta không viết CSS cho từng trang. Thay vào đó, chúng ta xây dựng bộ thư viện UI:
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp các biến thể của Button component (Primary, Danger, Ghost)
+    \rule{0.8\textwidth}{0.2\textwidth}
+    \caption{Các Component tái sử dụng được tạo bằng Tailwind CSS}
+\end{figure}
+
+
+\chapter{Tương tác UI Nâng cao: Kéo Thả (Drag and Drop)}
+
+\section{Tổng quan về thư viện dnd-kit}
+Việc xây dựng một hệ thống kéo thả (Drag and Drop - DnD) từ đầu bằng các sự kiện chuột (Mouse events) của DOM là cực kỳ phức tạp và dễ phát sinh lỗi, đặc biệt là trên các thiết bị cảm ứng (Touch devices) và trình đọc màn hình (Screen readers). Để giải quyết bài toán này trong hệ sinh thái React, \textbf{dnd-kit} là thư viện hiện đại và tối ưu nhất tính tới thời điểm hiện tại.
+
+Khác với các thư viện cũ như \texttt{react-beautiful-dnd}, \texttt{dnd-kit} được thiết kế theo kiến trúc module hóa:
 \begin{itemize}
-    \item \texttt{Button.tsx}: Chứa mọi logic về màu sắc, kích thước, trạng thái loading.
-    \item \texttt{Input.tsx}: Chứa logic về focus, border, error states.
+    \item \textbf{@dnd-kit/core}: Chứa logic cốt lõi (Core logic), quản lý ngữ cảnh (Context) và các cảm biến (Sensors).
+    \item \textbf{@dnd-kit/sortable}: Chuyên biệt cho bài toán sắp xếp mảng (Sortable lists).
+    \item \textbf{@dnd-kit/utilities}: Cung cấp các hàm hỗ trợ (như \texttt{arrayMove} để hoán đổi vị trí phần tử).
 \end{itemize}
-Khi cần thay đổi màu sắc chủ đạo của toàn bộ ứng dụng, chúng ta chỉ cần sửa đúng một dòng trong file \texttt{index.css} tại khối \texttt{@theme}.
 
-\chapter{Tối ưu hóa Hiệu năng và Trải nghiệm người dùng}
+\section{Kiến trúc hoạt động của dnd-kit}
 
-\section{Kỹ thuật Virtualization (Tầm nhìn tương lai)}
-Mặc dù dự án hiện tại xử lý tốt hàng trăm thẻ, nhưng với hàng ngàn thẻ, chúng ta cần đến \textbf{Virtualization} (chỉ render những thẻ đang hiển thị trên màn hình). Đây là hướng phát triển tiếp theo của dự án để đảm bảo hiệu năng không giới hạn.
+\subsection{DndContext và Sensors}
+Thành phần gốc của thư viện là \texttt{<DndContext>}. Nó bao bọc khu vực giao diện mà chúng ta muốn có khả năng kéo thả, quản lý trạng thái kéo và phát ra các sự kiện quan trọng như \texttt{onDragStart}, \texttt{onDragOver}, và \texttt{onDragEnd}.
 
-\section{Debouncing và Throttling trong Xử lý sự kiện}
-Các hành động như thay đổi kích thước cửa sổ hoặc cuộn trang được tối ưu bằng \textbf{Throttling} để giảm số lần tính toán lại vị trí các thẻ, giúp CPU không bị quá tải.
+\textbf{Sensors} (Cảm biến) quyết định khi nào thì một hành động kéo (Drag) bắt đầu. Trong dự án Kanban, chúng ta kết hợp cả \texttt{PointerSensor} (Dành cho chuột trên Desktop) và \texttt{TouchSensor} (Dành cho chạm trên Mobile) để ứng dụng hoạt động đa nền tảng.
 
-\section{Accessibility (A11y)}
-Dự án không chỉ chú trọng vẻ đẹp mà còn cả tính tiếp cận. Các thẻ và nút đều có thuộc tính \texttt{aria-label}, hỗ trợ người khiếm thị sử dụng Screen Readers để tương tác với bảng Kanban một cách dễ dàng.
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình component đang chứa `<DndContext>` với các `<SortableContext>` lồng bên trong
+    \rule{0.8\textwidth}{0.4\textwidth}
+    \caption{Cấu trúc lồng nhau của DndContext}
+\end{figure}
+
+\subsection{SortableContext và useSortable Hook}
+Bên trong \texttt{DndContext}, chúng ta sử dụng \texttt{<SortableContext>} để báo cho thư viện biết danh sách các mục (items) nào có thể sắp xếp.
+
+Hook \texttt{useSortable} được áp dụng lên từng phần tử con (ví dụ: từng Thẻ công việc) để gắn các thuộc tính (attributes) và lắng nghe (listeners) vào thẻ HTML, giúp nó có thể "bị nắm lấy" và "di chuyển". Hook này trả về \texttt{transform} (tọa độ x, y khi đang kéo) và \texttt{transition} (hiệu ứng chuyển động mượt mà).
+
+\textbf{Bài tập nhỏ 6: Áp dụng dnd-kit cho một Component có thể kéo (Draggable)}
+\begin{enumerate}
+    \item \textbf{Bước 1:} Sử dụng hook \texttt{useSortable} truyền vào \texttt{id} và \texttt{data} (thông tin đính kèm của phần tử).
+    \item \textbf{Bước 2:} Lấy ra \texttt{attributes}, \texttt{listeners}, \texttt{setNodeRef}, \texttt{transform}, \texttt{transition}.
+    \item \textbf{Bước 3:} Áp dụng CSS transform dựa trên tọa độ \texttt{transform} trả về để đối tượng di chuyển theo con trỏ chuột.
+\end{enumerate}
+
+\begin{Verbatim}
+// Code mẫu: Thiết lập phần tử có thể kéo (src/features/kanban/components/TaskCard.tsx)
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+export const TaskCard = ({ card, listId }: TaskCardProps) => {
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } =
+    useSortable({
+      id: card.id,
+      data: { type: "CARD", card, listId },
+    });
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
+  if (isDragging) {
+    return (
+      <div ref={setNodeRef} style={style} className="opacity-50 border-2 border-blue-500 bg-blue-50">
+        Đang di chuyển...
+      </div>
+    );
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="bg-white p-3 rounded shadow-sm cursor-grab">
+      {card.title}
+    </div>
+  );
+};
+\end{Verbatim}
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình Console log in ra object `event.active` và `event.over` khi thả một thẻ
+    \rule{0.8\textwidth}{0.3\textwidth}
+    \caption{Dữ liệu trả về từ sự kiện \texttt{onDragEnd} của dnd-kit}
+\end{figure}
+

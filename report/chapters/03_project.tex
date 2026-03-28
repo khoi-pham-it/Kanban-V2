@@ -1,358 +1,124 @@
 \part{XÂY DỰNG ĐỒ ÁN TỔNG HỢP}
 
-\chapter{Phân tích và Thiết kế hệ thống}
+\chapter{Phân tích và Thiết kế hệ thống Trello Mini}
 
-\section{Mô tả bài toán và Tầm quan trọng}
-Trong kỷ nguyên số, làm việc nhóm (Teamwork) và quản lý tiến độ dự án (Project Management) là những yếu tố quyết định sự thành bại của một tổ chức. Hệ thống quản lý công việc dạng danh sách truyền thống thường dẫn đến sự quá tải thông tin và khó hình dung tổng quan.
+\section{Tổng quan Đồ án (Capstone Project)}
+Phần đồ án tổng hợp này là nơi lắp ráp toàn bộ các module kỹ thuật, kiến trúc và công cụ đã trình bày ở phần trước (React Router, Zustand, FSD, Custom Hooks, Tailwind CSS) thành một hệ thống Kanban hoàn chỉnh và thống nhất. Trello Mini không chỉ là một trang web tĩnh, nó là một Web App tương tác cao.
 
-Mô hình Kanban - bắt nguồn từ hệ thống sản xuất tinh gọn của Toyota, cung cấp một giải pháp trực quan hóa quy trình làm việc hoàn hảo. Trạng thái của từng công việc (Task) được thể hiện bằng vị trí của nó trên một Bảng (Board). Ví dụ phổ biến nhất là luồng làm việc 3 bước: \textbf{Todo (Cần làm) $\rightarrow$ Doing (Đang làm) $\rightarrow$ Done (Hoàn thành)}.
+Các chức năng chính đã được triển khai thành công bao gồm:
+\begin{enumerate}
+    \item \textbf{Quản lý Authentication:} Đăng nhập mô phỏng và phân quyền định tuyến.
+    \item \textbf{Dashboard (Bảng điều khiển):} Quản lý nhiều dự án/bảng khác nhau (Tạo mới, đổi tên, xóa bảng).
+    \item \textbf{Giao diện Kanban (Board view):} Quản lý các danh sách (Todo, In Progress, Done) và thẻ công việc (Cards).
+    \item \textbf{Drag and Drop (Kéo và Thả):} Cho phép kéo thẻ giữa các danh sách hoặc trong cùng danh sách, cập nhật thứ tự tự động.
+\end{enumerate}
 
-Bài toán đặt ra cho hệ thống Trello Mini là phải số hóa được trải nghiệm Kanban vật lý này, sao cho người dùng có cảm giác như đang cầm một tờ giấy note (Card) và dán nó sang một cột (List) khác trên tấm bảng trắng (Board). Mọi thao tác phải diễn ra mượt mà, tức thời, không có độ trễ tải trang.
+\section{Luồng Authentication thực tế}
+Việc kết hợp \texttt{React Router} và State từ \texttt{useAuthStore} tạo nên một luồng bảo mật chặt chẽ. Khi người dùng mới vào hệ thống, họ phải đi qua trang đăng nhập.
 
-\section{Xác định yêu cầu tính năng (Use Cases)}
-Hệ thống được thiết kế với các nhóm chức năng cốt lõi sau:
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình trang Đăng nhập (LoginPage)
+    \rule{0.8\textwidth}{0.5\textwidth}
+    \caption{Giao diện Đăng nhập mô phỏng với Form validation}
+\end{figure}
+
+Ngay sau khi nhập đầy đủ thông tin vào Form, hàm xử lý của Custom Hook \texttt{useForm} sẽ được gọi và thiết lập trạng thái \texttt{isAuthenticated} thành \texttt{true} trong Zustand Store, từ đó \texttt{ProtectedRoute} sẽ mở khóa cho phép điều hướng vào Dashboard.
+
+\chapter{Quản lý Bảng dự án (Dashboard)}
+
+\section{Tạo và hiển thị Bảng (Boards)}
+Dashboard là nơi ứng dụng hiển thị một lưới (grid) các bảng dự án. Dữ liệu này được lấy trực tiếp từ \texttt{useBoardStore} (đã được lưu trữ cố định nhờ \texttt{persist} middleware).
+
+Khi người dùng nhấn vào thẻ "Tạo bảng mới", một Modal sẽ hiện ra, kết hợp với các component \texttt{Button} và \texttt{Input} (đã được tạo bằng Tailwind CSS) để thu thập thông tin và đẩy vào Store.
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình DashboardPage hiển thị danh sách các bảng và nút Tạo mới
+    \rule{0.9\textwidth}{0.6\textwidth}
+    \caption{Giao diện Dashboard quản lý danh sách Bảng dự án}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình Modal hiện ra khi bấm "Tạo Bảng"
+    \rule{0.6\textwidth}{0.4\textwidth}
+    \caption{Modal nhập tên Bảng dự án mới}
+\end{figure}
+
+\section{Cơ chế Phản hồi (Optimistic UI)}
+Trong dự án này, chúng tôi áp dụng tư duy "Optimistic UI" (Giao diện lạc quan). Ngay khi form được gửi (Submit), bảng mới lập tức xuất hiện trên màn hình nhờ vào khả năng re-render siêu tốc của React khi State thay đổi.
+
+\chapter{Triển khai Bảng Kanban và Kéo Thả (Drag and Drop)}
+
+\section{Cấu trúc Component lồng nhau (Nested Components)}
+Màn hình chi tiết bảng (\texttt{BoardPage}) là phần lõi phức tạp nhất của ứng dụng. Kiến trúc của nó thể hiện rõ ràng sức mạnh của mô hình Component-based trong React:
 \begin{itemize}
-    \item \textbf{Nhóm quản lý Phiên làm việc (Authentication):} Cung cấp tính năng Đăng nhập/Đăng xuất đơn giản. Thiết lập cơ chế \textit{Protected Routes} để đảm bảo tính riêng tư.
-    \item \textbf{Nhóm quản lý Bảng dự án (Board Dashboard):} Đóng vai trò là "Trang chủ" của không gian làm việc. Người dùng có thể xem danh sách tất cả các Dự án, tạo mới hoặc xóa dự án.
-    \item \textbf{Nhóm quản lý Cột trạng thái (List Management):} Trong một Bảng, người dùng có thể tạo ra vô số các Cột (Ví dụ: Backlog, In Progress). Mỗi cột có thể được đổi tên hoặc xóa bỏ.
-    \item \textbf{Nhóm quản lý Thẻ công việc (Card Management):} Mỗi thẻ đại diện cho một đầu việc cụ thể. Người dùng có thể thêm thẻ mới, chỉnh sửa chi tiết (Mô tả, Nhãn dán - Labels), và xóa thẻ.
-    \item \textbf{Nhóm tương tác Kéo Thả (Drag \& Drop):} Tính năng mang tính biểu tượng của Kanban, cho phép cập nhật trạng thái trực quan.
+    \item Component \texttt{BoardPage}: Chứa tiêu đề bảng, gọi và lặp qua các mảng danh sách (Lists).
+    \item Component \texttt{List}: Hiển thị tiêu đề của cột (Todo, Doing), nút "Thêm thẻ" và lặp qua mảng các thẻ.
+    \item Component \texttt{TaskCard}: Hiển thị nội dung chi tiết của một công việc.
 \end{itemize}
 
-\section{Triết lý thiết kế UI/UX và Hệ thống Design System}
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình tổng thể giao diện 1 bảng Kanban (BoardPage) với các cột và thẻ
+    \rule{0.9\textwidth}{0.6\textwidth}
+    \caption{Giao diện Bảng Kanban chi tiết với các cột và thẻ công việc}
+\end{figure}
 
-Dự án Trello Mini không chỉ hướng tới tính năng mà còn đặc biệt chú trọng vào trải nghiệm người dùng (UX) và giao diện trực quan (UI). Mục tiêu là tái tạo "cảm giác" mượt mà của Trello gốc nhưng vẫn mang những nét hiện đại và cá nhân hóa.
+\section{Áp dụng Kéo Thả (Drag and Drop) vào Bảng Kanban}
 
-\subsection{Bảng màu (Color Palette)}
-Hệ thống màu sắc được lựa chọn dựa trên sự tương phản và tính chuyên nghiệp:
-\begin{itemize}
-    \item \textbf{Màu chủ đạo (Primary):} \texttt{\#ec5b13} (Cam đặc trưng). Đây là màu dùng cho các hành động quan trọng (Call to Action), các liên kết đang hoạt động và làm điểm nhấn cho thương hiệu.
-    \item \textbf{Màu nền sáng (Background Light):} \texttt{\#f8f6f6}. Một sắc xám trắng cực nhẹ giúp làm nổi bật các thẻ Card màu trắng tinh khôi, giảm mỏi mắt khi làm việc lâu.
-    \item \textbf{Màu nền tối (Background Dark):} \texttt{\#221610}. Hỗ trợ Dark Mode hoàn chỉnh, mang lại sự sang trọng và tập trung.
-    \item \textbf{Màu trạng thái (Semantic Colors):}
-        \begin{itemize}
-            \item \textbf{Success:} Xanh lá cây cho các thẻ "Done".
-            \item \textbf{Danger:} \texttt{\#ef4444} (Red-500) cho các hành động xóa.
-            \item \textbf{Neutral:} Các sắc độ của \texttt{Slate} (từ 50 đến 900) để phân cấp thông tin.
-        \end{itemize}
-\end{itemize}
+\subsection{Luồng hoạt động khi Kéo thẻ giữa các Danh sách}
+Việc kéo thả thẻ (Card) từ danh sách này sang danh sách khác hoặc thay đổi vị trí trong cùng danh sách đòi hỏi hệ thống State phải vô cùng mạnh mẽ để tính toán lại mảng (Array Reordering).
 
-\subsection{Hệ thống Typography}
-Dự án sử dụng bộ font \textbf{"Public Sans"} từ Google Fonts. Đây là một font chữ không chân (sans-serif) được thiết kế cho các giao diện quản trị, có độ rộng ký tự đồng đều và hỗ trợ đọc văn bản nhỏ rất tốt trên màn hình kỹ thuật số.
-\begin{itemize}
-    \item \textbf{Tiêu đề Bảng:} Font-size 1.25rem (20px), Semi-bold.
-    \item \textbf{Tiêu đề Thẻ (Card):} Font-size 0.875rem (14px), Semi-bold, Line-height 1.25.
-    \item \textbf{Nội dung mô tả:} Font-size 0.75rem (12px), Regular, màu Slate-500.
-\end{itemize}
+Khi người dùng nhấn giữ và kéo thẻ (hành động được bắt bởi \texttt{useSensors}), thư viện sẽ tính toán khoảng cách và vị trí va chạm, sau đó phát ra sự kiện \texttt{onDragEnd}.
 
-\subsection{Quy tắc Khoảng cách và Bo góc (Spacing \& Border Radius)}
-Hệ thống áp dụng quy tắc 4px của Tailwind CSS để tạo sự nhất quán:
-\begin{itemize}
-    \item \textbf{Bo góc (Radius):} Các Card sử dụng \texttt{rounded-lg} (8px), các List sử dụng \texttt{rounded-xl} (12px) để tạo cảm giác mềm mại, thân thiện.
-    \item \textbf{Padding/Margin:} Sử dụng \texttt{p-4} (16px) cho container chính và \texttt{gap-3} (12px) cho khoảng cách giữa các thẻ công việc.
-\end{itemize}
-
-\subsection{Hiệu ứng ``Trello Feel''}
-Để đạt được cảm giác của Trello, hệ thống sử dụng:
-\begin{itemize}
-    \item \textbf{Horizontal Scrolling:} Toàn bộ bảng có thể cuộn ngang mượt màng khi số lượng cột vượt quá chiều rộng màn hình.
-    \item \textbf{Glassmorphism:} Sử dụng độ mờ đục (Opacity) cho nền của các cột (\texttt{bg-slate-200/50}) giúp giao diện trông có chiều sâu và hiện đại hơn.
-    \item \textbf{Hover Effects:} Các thẻ Card sẽ có bóng đổ nhẹ (\texttt{shadow-md}) và dịch chuyển tinh tế khi người dùng rê chuột qua.
-\end{itemize}
-
-\section{Kiến trúc Component chi tiết}
-
-Kiến trúc component được xây dựng theo mô hình phân cấp, đảm bảo tính đóng gói (encapsulation) và khả năng tái sử dụng.
-
-\subsection{Component Board (Thùng chứa chính)}
-Đóng vai trò là \texttt{DndContext} provider, quản lý toàn bộ luồng kéo thả của các danh sách con.
 \begin{Verbatim}
-interface BoardProps {
-  id: Id;
-  title: string;
-  lists: IList[];
-}
-\end{Verbatim}
+// Code mẫu: Xử lý sự kiện onDragEnd trong Kanban Board
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
+  if (!over) return;
 
-\subsection{Component List (Danh sách công việc)}
-Quản lý một nhóm các \texttt{TaskCard}. List chịu trách nhiệm hiển thị tiêu đề, số lượng thẻ và chứa form thêm thẻ mới.
-\begin{Verbatim}
-interface ListProps {
-  list: IList;
-  boardId: Id;
-}
+  const activeId = String(active.id);
+  const overId = String(over.id);
 
-const List = ({ list, boardId }: ListProps) => {
-  // Logic xử lý đổi tên danh sách, xóa danh sách
-  // Logic gọi Action addCard từ store
-  return (
-    <div className="kanban-column flex flex-col bg-slate-200/50 ...">
-      <ListHeader title={list.title} count={list.cards.length} />
-      <div className="flex flex-col gap-3 overflow-y-auto">
-        {list.cards.map(card => <TaskCard key={card.id} card={card} />)}
-      </div>
-      <AddCardForm onAdd={...} />
-    </div>
-  );
+  if (activeId === overId) return;
+
+  // Lấy listId thông qua data đính kèm trên phần tử
+  const activeListId = active.data.current?.listId;
+  const overListId = over.data.current?.listId || over.data.current?.list?.id;
+
+  if (activeListId && overListId) {
+    if (activeListId === overListId) {
+      // Logic đổi chỗ trong cùng 1 list
+      reorderCard(boardId, activeListId, activeId, overId);
+    } else {
+      // Logic di chuyển thẻ sang list khác
+      moveCard(boardId, activeListId, overListId, activeId, overId);
+    }
+  }
 };
 \end{Verbatim}
 
-\subsection{Component TaskCard (Thẻ công việc)}
-Là đơn vị thông tin nhỏ nhất. Hiển thị tiêu đề, nhãn dán, mô tả ngắn gọn và các icon chỉ báo.
-\begin{Verbatim}
-interface TaskCardProps {
-  card: ICard;
-  listId: Id;
-  boardId: Id;
-}
-\end{Verbatim}
-TaskCard sử dụng \texttt{useSortable} hook từ \texttt{@dnd-kit/sortable} để có thể di chuyển được. Khi nhấn vào Card, một Modal sẽ hiện ra để xem chi tiết.
+Tại đây, các actions như \texttt{reorderCard} và \texttt{moveCard} (đã xây dựng trong Zustand) sẽ được gọi, trực tiếp thay đổi vị trí của phần tử trong mảng gốc của Immer.
 
-\subsection{Component Modal (Chi tiết thẻ)}
-Sử dụng kỹ thuật \textit{React Portal} để hiển thị đè lên toàn bộ ứng dụng. Modal cung cấp các tính năng:
-\begin{itemize}
-    \item Chỉnh sửa tiêu đề và mô tả chi tiết (Rich text hoặc Markdown).
-    \item Quản lý nhãn dán (Labels) với bảng màu đa dạng.
-    \item Theo dõi lịch sử tạo thẻ.
-\end{itemize}
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình ĐANG thực hiện kéo thả 1 thẻ từ Todo sang Doing (có bóng mờ của thẻ)
+    \rule{0.8\textwidth}{0.5\textwidth}
+    \caption{Thao tác kéo thả thẻ giữa các danh sách mượt mà (Drag and Drop)}
+\end{figure}
 
-\section{Phân tích sâu về Logic Kéo và Thả (Drag and Drop)}
+\subsection{Cập nhật Nội dung Thẻ (Inline Edit)}
+Ngoài việc kéo thả, người dùng có thể nhấp trực tiếp vào tên của Danh sách (List) hoặc Thẻ (Card) để thay đổi nội dung. Tính năng này được quản lý hiệu quả bởi \texttt{useClickOutside}. Khi click ra khỏi vùng đang nhập liệu, dữ liệu được tự động lưu lại vào store.
 
-Tính năng Drag and Drop (DnD) được xây dựng trên nền tảng \textbf{@dnd-kit}, một thư viện hiện đại cho phép tùy biến cực cao.
+\begin{figure}[H]
+    \centering
+    % PLACEHOLDER: Ảnh chụp màn hình đang ấn vào thẻ để sửa nội dung (Inline edit)
+    \rule{0.6\textwidth}{0.3\textwidth}
+    \caption{Cập nhật trực tiếp nội dung thẻ trên giao diện}
+\end{figure}
 
-\subsection{Hệ thống Sensors (Cảm biến)}
-Để hỗ trợ đa nền tảng, hệ thống cấu hình nhiều loại cảm biến đồng thời:
-\begin{itemize}
-    \item \textbf{PointerSensor:} Xử lý sự kiện từ chuột và bàn di chuột (Trackpad). Cấu hình \texttt{activationConstraint} để tránh việc click chuột vô tình bị hiểu nhầm là bắt đầu kéo.
-    \item \textbf{TouchSensor:} Hỗ trợ các thiết bị cảm ứng như điện thoại, máy tính bảng.
-    \item \textbf{KeyboardSensor:} Cho phép người dùng di chuyển các thẻ bằng phím Tab và các phím mũi tên, đảm bảo tính \textit{Accessibility (A11y)}.
-\end{itemize}
+\chapter{Kết luận việc triển khai Đồ án}
+Tất cả các kiến thức từ quá trình khởi tạo dự án với Vite, thiết kế hệ thống giao diện với Tailwind CSS, quản lý State phức tạp với Zustand, phân quyền với React Router, và xử lý logic với Custom Hooks đều đã được chứng minh hiệu quả thực tế thông qua Trello Mini. Giao diện mượt mà, tốc độ phản hồi tức thì (Optimistic UI) và mã nguồn dễ bảo trì chính là tính ưu việt mà React mang lại.
 
-\subsection{Chiến lược Phát hiện Va chạm (Collision Detection)}
-Khi kéo một thẻ, hệ thống cần biết nó đang ``đè'' lên vị trí nào để hiển thị gợi ý. Chúng tôi sử dụng thuật toán \texttt{closestCorners}. Thay vì chỉ tính tâm điểm (center), \texttt{closestCorners} đo khoảng cách từ 4 góc của thẻ đang kéo tới các vùng thả (droppable containers). Điều này giúp việc di chuyển giữa các cột dài ngắn khác nhau trở nên chính xác hơn rất nhiều.
-
-\subsection{Thuật toán Reordering và Moving}
-Logic xử lý được chia làm hai trường hợp chính trong hàm \texttt{moveCard}:
-
-\textbf{1. Di chuyển trong cùng một danh sách (Reorder):}
-Sử dụng hàm \texttt{arrayMove} để hoán đổi vị trí các phần tử trong mảng.
-\begin{Verbatim}
-const fromIndex = list.cards.findIndex(c => c.id === activeId);
-const toIndex = list.cards.findIndex(c => c.id === overId);
-list.cards = arrayMove(list.cards, fromIndex, toIndex);
-\end{Verbatim}
-
-\textbf{2. Di chuyển sang danh sách khác (Move between lists):}
-Đây là phần phức tạp nhất. Hệ thống phải thực hiện 3 bước:
-\begin{enumerate}
-    \item Tìm danh sách nguồn và danh sách đích.
-    \item Loại bỏ (splice) phần tử khỏi mảng của danh sách nguồn.
-    \item Chèn (splice) phần tử đó vào vị trí tương ứng trong mảng của danh sách đích.
-\end{enumerate}
-
-\begin{Verbatim}
-moveCard: (boardId, fromListId, toListId, activeCardId, overIndex) =>
-  set((state) => {
-    const fromList = findList(state, fromListId);
-    const toList = findList(state, toListId);
-    
-    // Tìm và lấy thẻ đang di chuyển
-    const cardIndex = fromList.cards.findIndex(c => c.id === activeCardId);
-    const [movingCard] = fromList.cards.splice(cardIndex, 1);
-    
-    // Chèn vào vị trí mới ở danh sách đích
-    toList.cards.splice(overIndex, 0, movingCard);
-  })
-\end{Verbatim}
-
-\section{Mô hình Dữ liệu và Cấu trúc State Schema}
-
-Dữ liệu được tổ chức theo cấu trúc cây (Tree structure) phân cấp, phản ánh đúng logic hiển thị trên giao diện người dùng.
-
-\subsection{Cấu trúc JSON Schema}
-Toàn bộ dữ liệu của một Board được gói gọn trong một đối tượng lớn:
-\begin{Verbatim}
-{
-  "id": "board-1",
-  "title": "Dự án Trello Mini",
-  "lists": [
-    {
-      "id": "list-1",
-      "title": "Cần làm",
-      "cards": [
-        {
-          "id": "card-1",
-          "title": "Thiết kế UI",
-          "description": "Sử dụng Figma...",
-          "labels": ["Design", "High Priority"]
-        }
-      ]
-    }
-  ]
-}
-\end{Verbatim}
-
-\subsection{Tại sao lại sử dụng cấu trúc Nested (Lồng nhau)?}
-Mặc dù cấu trúc phẳng (Flattened/Normalized) thường được khuyến nghị cho Redux để tối ưu hiệu năng, nhưng với Zustand và Immer, cấu trúc lồng nhau mang lại nhiều lợi ích:
-\begin{itemize}
-    \item \textbf{Dễ hình dung:} Cấu trúc dữ liệu giống hệt cấu trúc Component (Board -> List -> Card), giúp lập trình viên dễ dàng debug.
-    \item \textbf{Tối ưu với Immer:} Immer cho phép chúng ta thay đổi dữ liệu lồng sâu một cách ``đột biến'' (mutative) trong code nhưng thực chất lại tạo ra object mới (immutable) ngầm bên dưới.
-    \item \textbf{Đơn giản hóa logic Drag \& Drop:} Khi di chuyển một thẻ, việc lấy toàn bộ mảng \texttt{cards} từ một \texttt{list} đơn giản hơn nhiều so với việc lọc từ một map khổng lồ.
-\end{itemize}
-
-\section{Trải nghiệm người dùng và Cơ chế Phản hồi}
-
-\subsection{Khái niệm ``Optimistic UI''}
-Trong dự án này, chúng tôi áp dụng tư duy ``Optimistic UI'' (Giao diện lạc quan). Khi người dùng thực hiện kéo thả hoặc thêm thẻ, trạng thái trong Zustand Store được cập nhật \textbf{ngay lập tức}. Người dùng thấy thẻ di chuyển ngay sau khi nhả chuột mà không phải chờ đợi bất kỳ xác nhận nào từ phía storage. Điều này tạo cảm giác ứng dụng cực kỳ nhanh và nhạy.
-
-\subsection{Ràng buộc dữ liệu (Form Validation)}
-Chúng tôi thực hiện kiểm soát dữ liệu đầu vào tại các điểm:
-\begin{itemize}
-    \item \textbf{Tiêu đề không được để trống:} Các nút ``Thêm'' sẽ bị vô hiệu hóa hoặc tự động bỏ qua nếu người dùng chỉ nhập khoảng trắng.
-    \item \textbf{Trimming:} Tự động loại bỏ các khoảng trắng thừa ở đầu và cuối chuỗi trước khi lưu vào store.
-    \item \textbf{Xác nhận xóa (Confirmation):} Các hành động mang tính phá hủy như xóa Card hay xóa List luôn yêu cầu xác nhận qua trình duyệt hoặc Modal tùy chỉnh để tránh sai sót.
-\end{itemize}
-
-\subsection{Thông báo và Trạng thái Trống (Empty States)}
-Khi một danh sách chưa có thẻ nào, hệ thống hiển thị một vùng đệm trống với viền nét đứt hoặc thông báo nhẹ nhàng, khuyến khích người dùng ``Kéo thả thẻ vào đây'' hoặc ``Thêm thẻ mới''. Điều này cải thiện đáng kể UX cho người dùng mới.
-
-\section{Thiết kế Đáp ứng (Responsive Design)}
-
-Dự án được tối ưu hóa để hoạt động tốt trên cả máy tính để bàn và thiết bị di động.
-
-\subsection{Xử lý cuộn ngang trên Mobile}
-Trên màn hình nhỏ, các cột Kanban không thể hiển thị đồng thời. Chúng tôi sử dụng CSS Flexbox:
-\begin{itemize}
-    \item Container chính: \texttt{flex overflow-x-auto snap-x}.
-    \item Các cột List: \texttt{snap-center min-w-[280px]}.
-\end{itemize}
-Điều này cho phép người dùng vuốt tay để chuyển giữa các cột một cách tự nhiên như đang sử dụng ứng dụng native.
-
-\subsection{Tối ưu hóa Kéo thả cho Touch}
-Như đã đề cập ở phần Sensors, \texttt{TouchSensor} được cấu hình đặc biệt. Trên thiết bị di động, người dùng cần nhấp giữ (Long press) trong khoảng 250ms để bắt đầu kéo thẻ. Điều này giúp phân biệt giữa hành động cuộn trang (scroll) và hành động kéo thẻ (drag).
-
-\subsection{Giao diện thích ứng (Adaptive UI)}
-Các nút bấm và vùng tương tác (hit areas) được mở rộng kích thước trên màn hình cảm ứng để người dùng dễ dàng thao tác bằng ngón tay, giảm thiểu việc bấm nhầm.
-
-\chapter{Kiến trúc Phần mềm và Feature-Sliced Design}
-
-\section{Phân tích Feature-Sliced Design (FSD) trong thực tế}
-Kiến trúc Feature-Sliced Design (FSD) được áp dụng triệt để trong dự án Trello Mini nhằm module hóa mã nguồn, giúp hệ thống dễ bảo trì và mở rộng khi quy mô tăng lên. Cấu trúc thư mục được chia thành các lớp (layers) rõ ràng theo mức độ phụ thuộc giảm dần:
-
-\subsection{Lớp App (Khởi tạo)}
-Chứa cấu hình khởi tạo ứng dụng, routing tổng, global styles và các providers. Đây là nơi kết nối tất cả các phần của ứng dụng lại với nhau.
-\begin{Verbatim}
-// app/router.tsx
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <MainLayout />,
-    children: [
-      { path: "dashboard", element: <DashboardPage /> },
-      { path: "board/:id", element: <BoardPage /> },
-    ]
-  }
-]);
-\end{Verbatim}
-
-\subsection{Lớp Pages (Trang)}
-Chứa các trang chính của ứng dụng. Mỗi trang đóng vai trò là một "container" để ghép nối các features và entities.
-\begin{itemize}
-    \item \textbf{LoginPage:} Xử lý đăng nhập.
-    \item \textbf{DashboardPage:} Hiển thị danh sách các bảng.
-    \item \textbf{BoardPage:} Hiển thị chi tiết một bảng Kanban.
-\end{itemize}
-
-\subsection{Lớp Features (Tính năng)}
-Chứa logic nghiệp vụ cụ thể mang lại giá trị cho người dùng. Các features trong dự án bao gồm:
-\begin{itemize}
-    \item \textbf{auth:} Quản lý trạng thái đăng nhập, lưu trữ token.
-    \item \textbf{kanban:} Toàn bộ logic về bảng, danh sách, thẻ và kéo thả.
-\end{itemize}
-
-\subsection{Lớp Entities (Thực thể)}
-Định nghĩa cấu trúc dữ liệu cốt lõi và chứa Zustand store quản lý state của các thực thể này. Đây là "nguồn sự thật duy nhất" (Single Source of Truth) cho dữ liệu.
-
-\subsection{Lớp Shared (Dùng chung)}
-Các thành phần dùng chung ở mức độ thấp nhất.
-\begin{itemize}
-    \item \textbf{UI Components:} Button, Input, Modal, Dropdown cơ bản.
-    \item \textbf{Utils:} Hàm xử lý chuỗi, định dạng ngày tháng.
-    \item \textbf{Hooks:} useDebounce, useLocalStorage.
-\end{itemize}
-
-\section{Quản lý State toàn cục với Zustand và Immer}
-
-\subsection{Sức mạnh của Zustand}
-Zustand được chọn thay vì Redux vì sự đơn giản và hiệu năng cao. Nó không yêu cầu nhiều code mẫu (boilerplate) và cho phép truy cập state trực tiếp qua hooks.
-
-\subsection{Middleware Persist}
-Tính năng tự động lưu trữ (Persistence) được thực hiện qua middleware:
-\begin{Verbatim}
-export const useBoardStore = create<StoreState>()(
-  persist(
-    (...args) => ({
-      ...createBoardSlice(...args),
-      ...createListSlice(...args),
-      ...createCardSlice(...args),
-    }),
-    { name: "kanban-storage" }
-  )
-);
-\end{Verbatim}
-Điều này giúp dữ liệu của người dùng được duy trì ngay cả khi họ tắt trình duyệt hoặc tải lại trang.
-
-\subsection{Xử lý State phức tạp với Immer}
-Immer giúp việc cập nhật các mảng lồng nhau trở nên cực kỳ đơn giản bằng cách cho phép chúng ta viết code theo phong cách "mutable":
-\begin{Verbatim}
-set((state) => {
-  const board = state.boards.find(b => b.id === boardId);
-  if (board) {
-    const list = board.lists.find(l => l.id === listId);
-    if (list) {
-      list.cards.push(newCard); // Rất tự nhiên!
-    }
-  }
-})
-\end{Verbatim}
-
-\chapter{Triển khai và Kiểm thử sản phẩm}
-
-\section{Luồng Authentication và Bảo vệ Tuyến đường (Protected Routes)}
-Để đảm bảo an ninh, chúng tôi xây dựng một component \texttt{ProtectedRoute} để bao bọc các trang nhạy cảm.
-\begin{Verbatim}
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-};
-\end{Verbatim}
-Luồng này đảm bảo rằng chỉ những người dùng đã đăng nhập mới có thể truy cập vào Dashboard và các bảng dự án.
-
-\section{Quy trình Phát triển và Đóng gói (Vite)}
-Vite được sử dụng làm công cụ build nhờ tốc độ khởi động nhanh và cơ chế Hot Module Replacement (HMR) tức thì.
-\begin{itemize}
-    \item \textbf{TypeScript:} Giúp phát hiện lỗi trong quá trình viết code thông qua hệ thống kiểu (typing) chặt chẽ cho IBoard, IList, ICard.
-    \item \textbf{ESLint:} Đảm bảo chất lượng mã nguồn và tuân thủ các quy tắc của React (ví dụ: Dependency array trong useEffect).
-    \item \textbf{PostCSS \& Tailwind:} Tối ưu hóa CSS bằng cách loại bỏ các class không sử dụng (Tree shaking), giúp file build cuối cùng siêu nhẹ.
-\end{itemize}
-
-\section{Kiểm thử và Phản hồi từ người dùng}
-Dự án đã trải qua các bước kiểm thử thủ công trên nhiều trình duyệt (Chrome, Firefox, Safari) và các kích thước màn hình khác nhau. Kết quả cho thấy:
-\begin{enumerate}
-    \item Tính năng kéo thả hoạt động ổn định, không bị giật lag (frame drop).
-    \item Dữ liệu được lưu trữ chính xác vào LocalStorage.
-    \item Giao diện thích ứng tốt trên cả iPhone và Android.
-\end{enumerate}
-
-\section{Kết luận và Hướng phát triển}
-Dự án Trello Mini đã hoàn thành các mục tiêu cơ bản về quản lý công việc trực quan. Trong tương lai, hệ thống có thể mở rộng thêm:
-\begin{itemize}
-    \item Kết nối Backend (NodeJS/MongoDB) để hỗ trợ làm việc nhóm thời gian thực.
-    \item Thêm tính năng đính kèm tệp tin (File attachments).
-    \item Tích hợp hệ thống thông báo đẩy (Push Notifications).
-\end{itemize}
