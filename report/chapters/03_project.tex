@@ -74,33 +74,33 @@ Việc kéo thả thẻ (Card) từ danh sách này sang danh sách khác hoặc
 Khi người dùng nhấn giữ và kéo thẻ (hành động được bắt bởi \texttt{useSensors}), thư viện sẽ tính toán khoảng cách và vị trí va chạm, sau đó phát ra sự kiện \texttt{onDragEnd}.
 
 \begin{Verbatim}
-// Code mẫu: Xử lý sự kiện onDragEnd trong Kanban Board
+// Trích từ: src/pages/boards/BoardPage.tsx
 const handleDragEnd = (event: DragEndEvent) => {
   const { active, over } = event;
-  if (!over) return;
 
-  const activeId = String(active.id);
-  const overId = String(over.id);
+  if (!over || active.id === over.id) return;
 
-  if (activeId === overId) return;
+  const activeData = active.data.current;
+  const overData = over.data.current;
 
-  // Lấy listId thông qua data đính kèm trên phần tử
-  const activeListId = active.data.current?.listId;
-  const overListId = over.data.current?.listId || over.data.current?.list?.id;
+  if (activeData?.type === "Card") {
+    const activeCardId = active.id;
+    const fromListId = activeData.listId;
 
-  if (activeListId && overListId) {
-    if (activeListId === overListId) {
-      // Logic đổi chỗ trong cùng 1 list
-      reorderCard(boardId, activeListId, activeId, overId);
-    } else {
-      // Logic di chuyển thẻ sang list khác
-      moveCard(boardId, activeListId, overListId, activeId, overId);
+    // Thả lên Card khác -> lấy listId của Card đó; thả lên List -> dùng over.id
+    const toListId = overData?.type === "Card" ? overData.listId : over.id;
+
+    // Vị trí đích lấy từ sortable index do dnd-kit tính toán
+    const overIndex = overData?.sortable?.index;
+
+    if (boardId && fromListId && toListId) {
+      moveCard(boardId, fromListId, toListId, activeCardId, overIndex);
     }
   }
 };
 \end{Verbatim}
 
-Tại đây, các actions như \texttt{reorderCard} và \texttt{moveCard} (đã xây dựng trong Zustand) sẽ được gọi, trực tiếp thay đổi vị trí của phần tử trong mảng gốc của Immer.
+Tại đây, action \texttt{moveCard} (đã xây dựng trong Zustand với Immer) được gọi cho cả hai trường hợp: di chuyển thẻ trong cùng danh sách và chuyển sang danh sách khác. Tham số \texttt{overIndex} được lấy từ \texttt{over.data.current?.sortable?.index} do \texttt{@dnd-kit/sortable} tự động gắn vào mỗi phần tử có thể sắp xếp.
 
 \begin{figure}[H]
     \centering
