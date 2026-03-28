@@ -372,32 +372,33 @@ Hook \texttt{useSortable} được áp dụng lên từng phần tử con (ví d
 \end{enumerate}
 
 \begin{Verbatim}
-// Code mẫu: Thiết lập phần tử có thể kéo (src/features/kanban/components/TaskCard.tsx)
+// Trích từ: src/features/kanban/components/TaskCard.tsx
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export const TaskCard = ({ card, listId }: TaskCardProps) => {
-  const { setNodeRef, attributes, listeners, transform, transition, isDragging } =
-    useSortable({
-      id: card.id,
-      data: { type: "CARD", card, listId },
-    });
+const TaskCard = ({ card, listId, boardId }: TaskCardProps) => {
+  const {
+    setNodeRef, attributes, listeners,
+    transform, transition, isDragging,
+  } = useSortable({
+    id: card.id,
+    data: { type: "Card", listId, card },
+  });
 
   const style = {
+    transform: CSS.Translate.toString(transform),
     transition,
-    transform: CSS.Transform.toString(transform),
+    opacity: isDragging ? 0.2 : 1,
   };
 
-  if (isDragging) {
-    return (
-      <div ref={setNodeRef} style={style} className="opacity-50 border-2 border-blue-500 bg-blue-50">
-        Đang di chuyển...
-      </div>
-    );
-  }
-
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="bg-white p-3 rounded shadow-sm cursor-grab">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm ..."
+    >
       {card.title}
     </div>
   );
