@@ -5,6 +5,10 @@ export interface BoardSlice {
   addBoard: (title: string) => void;
   updateBoard: (boardId: Id, title: string) => void;
   deleteBoard: (boardId: Id) => void;
+  addMemberToBoard: (boardId: Id, userId: string) => void;
+  removeMemberFromBoard: (boardId: Id, userId: string) => void;
+  isBoardMember: (board: IBoard, userId: string) => boolean;
+  findBoardsByOwnerOrMember: (userId: string) => IBoard[];
 }
 
 export interface ListSlice {

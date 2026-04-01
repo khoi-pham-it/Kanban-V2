@@ -13,7 +13,7 @@ export const useAuthStore = create<AuthState>()(
         // Here you would normally make an API call
         // For the sake of the project, we mock a successful login
         const mockUser: User = {
-          id: `user-${Date.now()}`,
+          id: email,
           email,
           name: email.split("@")[0] || "User",
           avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,

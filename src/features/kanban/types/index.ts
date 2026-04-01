@@ -18,5 +18,7 @@ export interface IList {
 export interface IBoard {
   id: Id;
   title: string;
+  ownerId: string;
+  memberIds: string[];
   lists: IList[]; // Lưu ý: List chứa mảng Card bên trong
 }

@@ -1,10 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { BoardCard } from "../../features/kanban/components";
 import { Modal } from "../../components/ui";
 import { useBoardStore } from "../../features/kanban/store/useBoardStore";
+import { useAuthStore } from "../../features/auth/store/useAuthStore";
 
 const Dashboard = () => {
-  const boards = useBoardStore((state) => state.boards);
+  const boardsState = useBoardStore((s) => s.boards);
+  const user = useAuthStore((s) => s.user);
+  const findBoards = useBoardStore((s) => s.findBoardsByOwnerOrMember);
+  
+  const boards = useMemo(() => {
+    if (!user) return [];
+    return findBoards(user.id);
+  }, [findBoards, user, boardsState.length]);
+
   const addBoard = useBoardStore((state) => state.addBoard);
   const deleteBoard = useBoardStore((state) => state.deleteBoard);
 
